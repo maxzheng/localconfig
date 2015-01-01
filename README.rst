@@ -1,7 +1,7 @@
 localconfig
 ===========
 
-A simplified interface to ConfigParser using dot notion with data type / comment support
+A simplified interface to ConfigParser using dot notion with data type / comment support.
 
 Design Goals
 ============
@@ -69,7 +69,7 @@ To add a section and set a value:
     config.add_section('App Server', comment='Settings for application server')
     config.app_server.host = 'localhost'
 
-    # Use :meth:`set` if you want to set a comment
+    # Use `set` if you want to set a comment
     config.set('App Server', 'port', 9090, comment='App server port')
 
 To write the config:
@@ -79,7 +79,10 @@ To write the config:
     config.save()
 
     # Or simply get the config as a string:
-    config_str = str(config)
+    # config_str = str(config)
+    #
+    # Or save to a different location:
+    # config.save('/path/to/save/to.ini')
 
 If we open ~/.config/program now, we would see::
 
