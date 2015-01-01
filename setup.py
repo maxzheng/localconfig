@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
   name='localconfig',
-  version='0.2.0',
+  version='0.2.1',
 
   author='Max Zheng',
   author_email='mzheng@linkedin.com',
