@@ -16,11 +16,12 @@ class DotNotionConfig(object):
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
 
-  def __init__(self, user_source=None, interpolation=False):
+  def __init__(self, user_source=None, interpolation=False, kv_sep=' = '):
     """
     :param file/str user_source: User config file name. This source is only read when an attempt to read a config
                                  value is made (delayed reading). Defaults to ~/.config/<PROGRAM_NAME> (if available)
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
+    :param str kv_sep: Separator for key and value. Used when saving self as string/file.
     """
     if not user_source and sys.argv:
       user_source = os.path.expanduser(os.path.join('~', '.config', os.path.basename(sys.argv[0])))
@@ -39,6 +40,9 @@ class DotNotionConfig(object):
 
     #: A dict that maps dot notation section.key to its actual (section, key)
     self.dot_keys = {}
+
+    #: Seperator for key/value. Used for save only.
+    self.kv_sep = kv_sep
 
   @classmethod
   def to_dot_key(cls, section, key=None):
@@ -65,27 +69,44 @@ class DotNotionConfig(object):
     self.parser.readfp(source_fp)
     self._parse_extra(source_fp)
 
-  def save(self, target_file=None, as_template=False, kv_sep=' = '):
+  def __str__(self):
+    output = []
+
+    for section in self.parser.sections():
+      if section in self.comments:
+        output.append(self.comments[section])
+      output.append('[%s]\n' % section)
+
+      for key, value in self.parser.items(section):
+        if (section, key) in self.comments:
+          output.append(self.comments[(section, key)])
+        output.append('%s%s%s\n' % (key, self.kv_sep, '\n'.join(textwrap.wrap(value, subsequent_indent='    '))))
+
+    return '\n'.join(output)
+
+
+  def save(self, target_file=None, as_template=False):
     """
     Save the config
 
     :param str target_file: File to save to. Defaults to `self.user_source`
     :param bool as_template: Save the config with all keys and sections commented out for user to modify
-    :param str kv_sep: Separator for key and value
     """
     if not target_file:
       target_file = self.user_source
 
-    with open(target_file, 'w') as fp:
-      for section in self.parser.sections():
-        if section in self.comments:
-          fp.write(self.comments[section])
-        fp.write('[%s]\n' % section)
+    output = str(self)
 
-        for key, value in self.parser.items(section):
-          if (section, key) in self.comments:
-            fp.write(self.comments[(section, key)])
-          fp.write('%s%s%s\n\n' % (key, kv_sep, '\n'.join(textwrap.wrap(value, subsequent_indent=4))))
+    if as_template:
+      output_tmpl = []
+      for line in output.split('\n'):
+        if line and not line.startswith('#'):
+          line = '# %s' % line
+        output_tmpl.append(line)
+      output = '\n'.join(output_tmpl)
+
+    with open(target_file, 'w') as fp:
+      fp.write(output)
 
   def _parse_extra(self, fp):
     """ Parse and store the config comments and create maps for dot notion lookup """
@@ -108,13 +129,13 @@ class DotNotionConfig(object):
         section = line.strip('[]')
         self.dot_keys[self.to_dot_key(section)] = section
         if comment:
-          self.comments[section] = comment
+          self.comments[section] = comment.rstrip()
 
       elif CONFIG_KEY_RE.match(line):  # Config
         key = line.split('=', 1)[0].strip()
         self.dot_keys[self.to_dot_key(section, key)] = (section, key)
         if comment:
-          self.comments[(section, key)] = comment
+          self.comments[(section, key)] = comment.rstrip()
 
       comment = ''
 
