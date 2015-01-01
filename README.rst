@@ -30,7 +30,9 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     # Server port
     port = 8080
 
-1. To read the config, simply do::
+To read the config, simply do:
+
+.. code-block:: python
 
     from localconfig import config
 
@@ -42,7 +44,9 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     # Or if the config file is elsewhere::
     # config.read('/etc/path/to/config.ini')
 
-2. Now, let's do some inspection::
+Now, let's do some inspection:
+
+.. code-block:: python
 
     # Iterate over sections
     for section in config:
@@ -58,7 +62,9 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     items = list(config.web_server)   # [('host': '0.0.0.0', 'port': 8080)]
     items = dict(config.web_server)   # {'host': '0.0.0.0', 'port': 8080}
 
-3. To add a section and set a value::
+To add a section and set a value:
+
+.. code-block:: python
 
     config.add_section('App Server', comment='Settings for application server')
     config.app_server.host = 'localhost'
@@ -66,7 +72,9 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     # Use :meth:`set` if you want to set a comment
     config.set('App Server', 'port', 9090, comment='App server port')
 
-4. To write the config::
+To write the config:
+
+.. code-block:: python
 
     config.save()
 
