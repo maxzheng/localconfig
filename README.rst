@@ -59,7 +59,7 @@ Now, let's do some inspection:
       print key, value                # host 0.0.0.0
                                       # port 8080
 
-    items = list(config.web_server)   # [('host': '0.0.0.0', 'port': 8080)]
+    items = list(config.web_server)   # [('host', '0.0.0.0'), ('port', 8080)]
     items = dict(config.web_server)   # {'host': '0.0.0.0', 'port': 8080}
 
 To add a section and set a value:
