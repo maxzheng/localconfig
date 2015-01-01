@@ -247,11 +247,11 @@ class DotNotionConfig(object):
     Get a section
 
     :param str section: Section to get
-    :rtype: :class:`SectionAccessor`
+    :rtype: :class:`_SectionAccessor`
     :raise NoSectionError: if section does not exist
     """
     if section in self._dot_keys:
-      return SectionAccessor(self, section)
+      return _SectionAccessor(self, section)
     raise NoSectionError(section)
 
   def __iter__(self):
@@ -276,14 +276,20 @@ class DotNotionConfig(object):
     self._add_dot_key(section)
 
 
-class SectionAccessor(object):
+class _SectionAccessor(object):
+  """
+  Provides access (read/write/iter) for a config section.
+
+  This is a private class and it is only outside of DotNotionConfig because `super` doesn't work with
+  private class in __new__.
+  """
   _instances = {}
 
   def __new__(cls, config, section):
     if (config, section) in cls._instances:
       return cls._instances[(config, section)]
     else:
-      return super(SectionAccessor, cls).__new__(cls, config, section)
+      return super(_SectionAccessor, cls).__new__(cls, config, section)
 
   def __init__(self, config, section):
     self._config = config
@@ -305,7 +311,7 @@ class SectionAccessor(object):
     :param str value: Config value to set to
     """
     if key in ['_config', '_section']:
-      super(SectionAccessor, self).__setattr__(key, value)
+      super(_SectionAccessor, self).__setattr__(key, value)
     else:
       return self._config._dot_set(self._section, key, value)
 
