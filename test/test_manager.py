@@ -131,8 +131,9 @@ class TestDotNotationConfig(object):
       'true': True} == dict(config.types)
 
   def test_add_section(self, config):
-    config.add_section('New Section')
+    config.add_section('New Section', comment='Comment for\n  new section')
     config.new_section.value = 1
+    assert '# Comment for\n#   new section\n[New Section]' in str(config)
 
     with pytest.raises(DuplicateSectionError):
       config.add_section('another-section')

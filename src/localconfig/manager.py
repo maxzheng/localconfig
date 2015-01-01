@@ -86,7 +86,7 @@ class DotNotionConfig(object):
     self._parse_extra(source_fp)
 
   def __str__(self):
-    self._load_last_source()
+    self._read_last_source()
 
     output = []
 
@@ -166,7 +166,7 @@ class DotNotionConfig(object):
     :param default: Default value for key if key was not found.
     :return: Value for the section/key or `default` if it does not exist.
     """
-    self._load_last_source()
+    self._read_last_source()
 
     try:
       value = self._parser.get(section, key)
@@ -187,7 +187,7 @@ class DotNotionConfig(object):
     :param value: Value for key. It can be any primitive type.
     :param str comment: Comment for the key
     """
-    self._load_last_source()
+    self._read_last_source()
 
     if not isinstance(value, str):
       value = str(value)
@@ -196,9 +196,9 @@ class DotNotionConfig(object):
 
     self._add_dot_key(section, key)
     if comment:
-      self._comments[(section, key)] = comment
+      self._add_comment(section, comment, key)
 
-  def _load_last_source(self):
+  def _read_last_source(self):
     if not self._last_source_read:
       if os.path.exists(self._last_source):
         self.read(self._last_source)
@@ -255,25 +255,45 @@ class DotNotionConfig(object):
     raise NoSectionError(section)
 
   def __iter__(self):
-    self._load_last_source()
+    self._read_last_source()
 
     for section in self._parser.sections():
       yield self._to_dot_key(section)
 
-  def add_section(self, section):
+  def add_section(self, section, comment=None):
     """
     Add a section
 
     :param str section: Section to add
     :raise DuplicateSectionError: if section already exist.
     """
-    self._load_last_source()
+    self._read_last_source()
 
     if self._to_dot_key(section) in self._dot_keys:
       raise DuplicateSectionError(section)
 
     self._parser.add_section(section)
     self._add_dot_key(section)
+    if comment:
+      self._add_comment(section, comment)
+
+  def _add_comment(self, section, comment, key=None):
+    """
+    Add a comment by prefixing with '# '
+
+    :param str section: Section to add comment to
+    :param str comment: Comment to add
+    :param str key: Key to add comment to
+    """
+
+    if '\n' in comment:
+      comment = '\n# '.join(comment.split('\n'))
+    comment = '# ' + comment
+
+    if key:
+      self._comments[(section, key)] = comment
+    else:
+      self._comments[section] = comment
 
 
 class _SectionAccessor(object):
@@ -316,7 +336,7 @@ class _SectionAccessor(object):
       return self._config._dot_set(self._section, key, value)
 
   def __iter__(self):
-    self._config._load_last_source()
+    self._config._read_last_source()
 
     section = self._config._dot_keys[self._section]
     for item in self._config._parser.items(section):
