@@ -164,7 +164,8 @@ class DotNotionConfig(object):
     :param str section: Section to get config for
     :param str key: Key to get config for
     :param default: Default value for key if key was not found.
-    :return: Value for the section/key or `default` if it does not exist.
+    :return: Value for the section/key or `default` if set and key does not exist.
+    :raise NoOptionError: if the key does not exist and no default value is set.
     """
     self._read_last_source()
 
