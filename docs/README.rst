@@ -1,7 +1,7 @@
 localconfig
 ===========
 
-A simplified interface to ConfigParser using dot notion with data type / comment support.
+A simplified interface to `ConfigParser`_ using dot notion with data type / comment support.
 
 Design Goals
 ============
