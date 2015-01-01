@@ -1,14 +1,15 @@
+from ConfigParser import RawConfigParser, SafeConfigParser, NoSectionError, DuplicateSectionError, NoOptionError
 import os
 import re
+from StringIO import StringIO
 import sys
 import textwrap
 
-from ConfigParser import RawConfigParser, SafeConfigParser, NoSectionError
-from StringIO import StringIO
 
-from localconfig.utils import is_float, is_int, is_bool, is_config, CONFIG_KEY_RE, to_bool
+from localconfig.utils import is_float, is_int, is_long, is_bool, is_config, CONFIG_KEY_RE, to_bool
 
 NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
+NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
 
 
 class DotNotionConfig(object):
@@ -16,41 +17,56 @@ class DotNotionConfig(object):
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
 
-  def __init__(self, user_source=None, interpolation=False, kv_sep=' = '):
+  def __init__(self, last_source=None, interpolation=False, kv_sep=' = '):
     """
-    :param file/str user_source: User config file name. This source is only read when an attempt to read a config
-                                 value is made (delayed reading). Defaults to ~/.config/<PROGRAM_NAME> (if available)
+    :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
+                                 config value is made (delayed reading, hence "last") if it exists.
+                                 It is also the default target file location for :meth:`self.save`
+                                 Defaults to ~/.config/<PROGRAM_NAME> (if available)
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
     :param str kv_sep: Separator for key and value. Used when saving self as string/file.
     """
-    if not user_source and sys.argv:
-      user_source = os.path.expanduser(os.path.join('~', '.config', os.path.basename(sys.argv[0])))
+    if not last_source and sys.argv:
+      last_source = os.path.expanduser(os.path.join('~', '.config', os.path.basename(sys.argv[0])))
 
     #: User config file name
-    self.user_source = user_source
+    self._last_source = last_source
 
-    #: Indicate if `self.user_source` has been read
-    self._user_source_read = False
+    #: Indicate if `self._last_source` has been read
+    self._last_source_read = False
 
     #: Parser instance from ConfigParser that does the underlying config parsing
-    self.parser = SafeConfigParser() if interpolation else RawConfigParser()
+    self._parser = SafeConfigParser() if interpolation else RawConfigParser()
 
     #: A dict that maps (section, key) to its comment.
-    self.comments = {}
+    self._comments = {}
 
     #: A dict that maps dot notation section.key to its actual (section, key)
-    self.dot_keys = {}
+    self._dot_keys = {}
 
     #: Seperator for key/value. Used for save only.
-    self.kv_sep = kv_sep
+    self._kv_sep = kv_sep
+
+    #: Cache to avoid transforming value too many times
+    self._value_cache = {}
 
   @classmethod
-  def to_dot_key(cls, section, key=None):
+  def _to_dot_key(cls, section, key=None):
     """ Return the section and key in dot notation format. """
     if key:
-      return (NON_ALPHA_NUM.sub('_', section), NON_ALPHA_NUM.sub('_', key))
+      return (NON_ALPHA_NUM.sub('_', section.lower()), NON_ALPHA_NUM.sub('_', key.lower()))
     else:
-      return NON_ALPHA_NUM.sub('_', section)
+      return NON_ALPHA_NUM.sub('_', section.lower())
+
+  def _add_dot_key(self, section, key=None):
+    """
+    :param str section: Config section
+    :param str key: Config key
+    """
+    if key:
+      self._dot_keys[self._to_dot_key(section, key)] = (section, key)
+    else:
+      self._dot_keys[self._to_dot_key(section)] = section
 
   def read(self, source=None):
     """
@@ -61,26 +77,28 @@ class DotNotionConfig(object):
 
     if isinstance(source, str) and is_config(source):
       source_fp = StringIO(source)
-    elif isistance(source, file):
+    elif isinstance(source, file) or isinstance(source, StringIO):
       source_fp = source
     else:
       source_fp = open(source)
 
-    self.parser.readfp(source_fp)
+    self._parser.readfp(source_fp)
     self._parse_extra(source_fp)
 
   def __str__(self):
+    self._load_last_source()
+
     output = []
 
-    for section in self.parser.sections():
-      if section in self.comments:
-        output.append(self.comments[section])
+    for section in self._parser.sections():
+      if section in self._comments:
+        output.append(self._comments[section])
       output.append('[%s]\n' % section)
 
-      for key, value in self.parser.items(section):
-        if (section, key) in self.comments:
-          output.append(self.comments[(section, key)])
-        output.append('%s%s%s\n' % (key, self.kv_sep, '\n'.join(textwrap.wrap(value, subsequent_indent='    '))))
+      for key, value in self._parser.items(section):
+        if (section, key) in self._comments:
+          output.append(self._comments[(section, key)])
+        output.append('%s%s%s\n' % (key, self._kv_sep, '\n'.join(textwrap.wrap(value, subsequent_indent='    '))))
 
     return '\n'.join(output)
 
@@ -89,11 +107,11 @@ class DotNotionConfig(object):
     """
     Save the config
 
-    :param str target_file: File to save to. Defaults to `self.user_source`
+    :param str target_file: File to save to. Defaults to `self._last_source`
     :param bool as_template: Save the config with all keys and sections commented out for user to modify
     """
     if not target_file:
-      target_file = self.user_source
+      target_file = self._last_source
 
     output = str(self)
 
@@ -127,74 +145,176 @@ class DotNotionConfig(object):
 
       if line.startswith('['):  # Section
         section = line.strip('[]')
-        self.dot_keys[self.to_dot_key(section)] = section
+        self._add_dot_key(section)
         if comment:
-          self.comments[section] = comment.rstrip()
+          self._comments[section] = comment.rstrip()
 
       elif CONFIG_KEY_RE.match(line):  # Config
         key = line.split('=', 1)[0].strip()
-        self.dot_keys[self.to_dot_key(section, key)] = (section, key)
+        self._add_dot_key(section, key)
         if comment:
-          self.comments[(section, key)] = comment.rstrip()
+          self._comments[(section, key)] = comment.rstrip()
 
       comment = ''
 
-  def get(self, section, key, default=None):
+  def get(self, section, key, default=NO_DEFAULT_VALUE):
     """
-    Get config value with data type transformation
+    Get config value with data type transformation (from str)
 
     :param str section: Section to get config for
     :param str key: Key to get config for
-    :param default: Default value for key
+    :param default: Default value for key if key was not found.
     :return: Value for the section/key or `default` if it does not exist.
     """
-    if not self._user_source_read:
-      if os.path.exists(self.user_source):
-        self.read(self.user_source)
-      self._user_source_read = True
+    self._load_last_source()
 
     try:
-      value = self.parser.get(section, key)
+      value = self._parser.get(section, key)
     except Exception:
-      return default
+      if default == NO_DEFAULT_VALUE:
+        raise
+      else:
+        return default
 
-    if is_int(value):
-      return int(value)
-    elif is_float(value):
-      return float(value)
-    elif is_bool(value):
-      return to_bool(value)
-    else:
-      return value
+    return self._typed_value(value)
 
-  def _dot_get(self, section, key, default=None):
-    """ Same as :meth:`self.get` except the section / key are using dot notation format from `cls.to_dot_key' """
-    if not (section, key) in self.dot_keys:
-      return default
+  def set(self, section, key, value, comment=None):
+    """
+    Set config value with data type transformation (to str)
 
-    section, key = self.dot_keys[(section, key)]
+    :param str section: Section to set config for
+    :param str key: Key to set config for
+    :param value: Value for key. It can be any primitive type.
+    :param str comment: Comment for the key
+    """
+    self._load_last_source()
+
+    if not isinstance(value, str):
+      value = str(value)
+
+    self._parser.set(section, key, value)
+
+    self._add_dot_key(section, key)
+    if comment:
+      self._comments[(section, key)] = comment
+
+  def _load_last_source(self):
+    if not self._last_source_read:
+      if os.path.exists(self._last_source):
+        self.read(self._last_source)
+      self._last_source_read = True
+
+  def _typed_value(self, value):
+    """ Transform string value to an actual data type of the same value. """
+    if value not in self._value_cache:
+      new_value = value
+      if is_int(value):
+        new_value = int(value)
+      elif is_float(value):
+        new_value = float(value)
+      elif is_long(value):
+        new_value = long(value)
+      elif is_bool(value):
+        new_value = to_bool(value)
+      elif value == str(None):
+        new_value = None
+      self._value_cache[value] = new_value
+
+    return self._value_cache[value]
+
+  def _dot_get(self, section, key, default=NO_DEFAULT_VALUE):
+    """ Same as :meth:`self.get` except the section / key are using dot notation format from `cls._to_dot_key' """
+    if not (section, key) in self._dot_keys:
+      if default == NO_DEFAULT_VALUE:
+        raise NoOptionError(key, section)
+      else:
+        return default
+
+    section, key = self._dot_keys[(section, key)]
     return self.get(section, key, default)
 
-  def __getattr__(self, attr):
-    if attr in self.dot_keys:
-      return SectionAccessor(self, attr)
-    elif ('DEFAULT', attr) in self.dot_keys:
-      return self._dot_get('DEFAULT', attr)
-    raise NoSectionError(attr)
+  def _dot_set(self, section, key, value):
+    """ Same as :meth:`self.set` except the section / key are using dot notation format from `cls._to_dot_key' """
+    if (section, key) in self._dot_keys:
+      section, key = self._dot_keys[(section, key)]
+      self.set(section, key, value)
+    else:
+      section = self._dot_keys[section]
+      self.set(section, key, value)
+
+  def __getattr__(self, section):
+    """
+    Get a section
+
+    :param str section: Section to get
+    :rtype: :class:`SectionAccessor`
+    :raise NoSectionError: if section does not exist
+    """
+    if section in self._dot_keys:
+      return SectionAccessor(self, section)
+    raise NoSectionError(section)
+
+  def __iter__(self):
+    self._load_last_source()
+
+    for section in self._parser.sections():
+      yield self._to_dot_key(section)
+
+  def add_section(self, section):
+    """
+    Add a section
+
+    :param str section: Section to add
+    :raise DuplicateSectionError: if section already exist.
+    """
+    self._load_last_source()
+
+    if self._to_dot_key(section) in self._dot_keys:
+      raise DuplicateSectionError(section)
+
+    self._parser.add_section(section)
+    self._add_dot_key(section)
 
 
 class SectionAccessor(object):
-  instances = {}
+  _instances = {}
 
   def __new__(cls, config, section):
-    if (config, section) in cls.instances:
-      return cls.instances[(config, section)]
+    if (config, section) in cls._instances:
+      return cls._instances[(config, section)]
     else:
       return super(SectionAccessor, cls).__new__(cls, config, section)
 
   def __init__(self, config, section):
-    self.config = config
-    self.section = section
+    self._config = config
+    self._section = section
 
-  def __getattr__(self, attr):
-    return self.config._dot_get(self.section, attr)
+  def __getattr__(self, key):
+    """
+    Get config value
+
+    :param str key: Config key to get value for
+    """
+    return self._config._dot_get(self._section, key)
+
+  def __setattr__(self, key, value):
+    """
+    Set config value
+
+    :param str key: Config key to set value for
+    :param str value: Config value to set to
+    """
+    if key in ['_config', '_section']:
+      super(SectionAccessor, self).__setattr__(key, value)
+    else:
+      return self._config._dot_set(self._section, key, value)
+
+  def __iter__(self):
+    self._config._load_last_source()
+
+    section = self._config._dot_keys[self._section]
+    for item in self._config._parser.items(section):
+      key, value = item
+      key = self._config._to_dot_key(key)
+      value = self._config._typed_value(value)
+      yield (key, value)

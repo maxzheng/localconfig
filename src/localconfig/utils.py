@@ -11,6 +11,10 @@ def is_int(value):
   return _is_type(value, int)
 
 
+def is_long(value):
+  return _is_type(value, long)
+
+
 def is_bool(value):
   return value.lower() in ['true', 'false', 'yes', 'no', 'on', 'off']
 
