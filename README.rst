@@ -7,10 +7,12 @@ Design Goals
 ============
 
 * Simple access to config using dot notion and iterators
-* Backward/forward compatible ini format as :package:`ConfigParser` (as that is used as the backend)
+* Backward/forward compatible ini format as `ConfigParser`_ (as that is used as the backend)
 * Data type support by intelligently guessing the data types based on value on read.
 * Multiple data source input (read from string, file pointer, or file)
 * Full comment support / retention on save
+
+.. _ConfigParser: https://docs.python.org/2/library/configparser.html
 
 How to Use
 ==========
