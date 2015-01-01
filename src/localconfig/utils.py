@@ -23,6 +23,10 @@ def to_bool(value):
   return value.lower() in ['true', 'yes', 'on']
 
 
+def is_none(value):
+  return value.lower() == str(None).lower()
+
+
 def is_config(value):
   return '\n' in value or CONFIG_KEY_RE.match(value)
 

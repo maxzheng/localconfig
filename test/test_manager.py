@@ -27,6 +27,9 @@ true = True
 # A false bool value
 false = False
 
+# A None value
+none = None
+
 # A string value
 string-value = Value
 
@@ -55,6 +58,7 @@ class TestDotNotationConfig(object):
     assert config.types.long == 3L
     assert config.types.true == True
     assert config.types.false == False
+    assert config.types.none is None
     assert config.types.string_value == 'Value'
 
     assert config.another_section.multi_line == \
@@ -71,8 +75,9 @@ class TestDotNotationConfig(object):
       ('types', 'float'): '# A float value',
       ('types', 'long'): '# A long value',
       ('types', 'true'): '# A bool value',
-      'another-section': '####################################################\n# Another section\n# with multiline comments\n####################################################',
       ('types', 'false'): '# A false bool value',
+      ('types', 'none'): '# A None value',
+      'another-section': '####################################################\n# Another section\n# with multiline comments\n####################################################',
       'types': '# Section used for type testing'
     } == config._comments
 
@@ -121,9 +126,11 @@ class TestDotNotationConfig(object):
       ('long', 3L),
       ('true', True),
       ('false', False),
+      ('none', None),
       ('string_value', 'Value')] == list(config.types)
     assert {
       'false': False,
+      'none': None,
       'string_value': 'Value',
       'int': 1,
       'float': 2.0,

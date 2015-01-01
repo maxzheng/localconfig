@@ -6,7 +6,7 @@ import sys
 import textwrap
 
 
-from localconfig.utils import is_float, is_int, is_long, is_bool, is_config, CONFIG_KEY_RE, to_bool
+from localconfig.utils import is_float, is_int, is_long, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
 
 NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
 NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
@@ -216,7 +216,7 @@ class DotNotionConfig(object):
         new_value = long(value)
       elif is_bool(value):
         new_value = to_bool(value)
-      elif value == str(None):
+      elif is_none(value):
         new_value = None
       self._value_cache[value] = new_value
 

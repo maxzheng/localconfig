@@ -101,7 +101,7 @@ If we open ~/.config/program now, we would see::
 Supported Data Types
 ====================
 
-Data type is guessed based on the value and converted on read (cached for speed).
+Data type is guessed based on the value and converted on read.
 
 The following types are supported:
 
@@ -112,7 +112,7 @@ int     1
 float   2.0
 long    3L
 bool    true false yes no on off (case insensitive)
-None    None
+None    none (case insensitive)
 str     Any other value not matched by above
 ======= ===========================================
 
