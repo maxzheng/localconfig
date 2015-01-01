@@ -91,21 +91,26 @@ If we open ~/.config/program now, we would see::
     port = 9090
 
 Supported Data Types
-==================
-Data type is guessed based on the value and converted on read (cached for speed).
-The following types are supported::
+====================
 
-    Type    | Example Value
-    ------------------------------
-    int     | 1
-    float   | 2.0
-    long    | 3L
-    bool    | true false yes no on off (case insensitive)
-    None    | None
-    str     | Any other value not matched by above
+Data type is guessed based on the value and converted on read (cached for speed).
+
+The following types are supported:
+
+======= ===========================================
+Type    Example Value
+======= ===========================================
+int     1
+float   2.0
+long    3L
+bool    true false yes no on off (case insensitive)
+None    None
+str     Any other value not matched by above
+======= ===========================================
 
 Contribute / Report Bugs
 ========================
+
 Github project: https://github.com/maxzheng/localconfig
 
 Report issues/bugs: https://github.com/maxzheng/localconfig/issues
