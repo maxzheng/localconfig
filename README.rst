@@ -58,7 +58,7 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     items = list(config.web_server)   # [('host': '0.0.0.0', 'port': 8080)]
     items = dict(config.web_server)   # {'host': '0.0.0.0', 'port': 8080}
 
-2. To add a section and set a value::
+3. To add a section and set a value::
 
     config.add_section('App Server', comment='Settings for application server')
     config.app_server.host = 'localhost'
@@ -66,7 +66,7 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     # Use :meth:`set` if you want to set a comment
     config.set('App Server', 'port', 9090, comment='App server port')
 
-3. To write the config::
+4. To write the config::
 
     config.save()
 
