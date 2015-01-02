@@ -3,19 +3,19 @@ localconfig
 
 A simplified interface to `ConfigParser`_ using dot notion with data type / comment support.
 
-Design Goals
-============
+Feature Summary
+===============
 
 * Simple access to config using dot notion and iterators
-* Backward/forward compatible ini format as `ConfigParser`_ (as that is used as the backend)
+* Full compatibility ini format with `ConfigParser`_ (that is used as the backend)
 * Data type support by intelligently guessing the data types based on value on read.
-* Multiple data source input (read from string, file pointer, or file)
+* Multiple config source input (read from string, file pointer, or file)
 * Full comment support / retention on save
 
 .. _ConfigParser: https://docs.python.org/2/library/configparser.html
 
-How to Use
-==========
+Quick Start Tutorial
+====================
 
 To install::
 
