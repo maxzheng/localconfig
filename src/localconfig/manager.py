@@ -26,10 +26,10 @@ class DotNotationConfig(object):
     :param int indent_spaces: Number of spaces to use when indenting a value spanning multiple lines.
     """
     if not last_source and sys.argv:
-      last_source = os.path.expanduser(os.path.join('~', '.config', os.path.basename(sys.argv[0])))
+      last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
 
     #: User config file name
-    self._last_source = last_source
+    self._last_source = os.path.expanduser(last_source)
 
     #: Indicate if `self._last_source` has been read
     self._last_source_read = False

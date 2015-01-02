@@ -7,7 +7,7 @@ Feature Summary
 ===============
 
 * Simple access to config using dot notion and iterators
-* Full compatibility ini format with `ConfigParser`_ (that is used as the backend)
+* Full compatibility with `ConfigParser`_ ini formats (as that is used as the backend)
 * Data type support by intelligently guessing the data types based on value on read.
 * Multiple config source input (read from string, file pointer, or file)
 * Full comment support / retention on save
@@ -32,21 +32,26 @@ Let's say we have a script named 'program' with the following config in ~/.confi
     # Server port
     port = 8080
 
+    # Debug logging
+    debug = off
+
 To read the config, simply do:
 
 .. code-block:: python
 
     from localconfig import config
 
-    start_server(config.web_server.host, config.web_server.port)
+    start_server(config.web_server.host, config.web_server.port, config.web_server.debug)
 
     # Or use get method:
-    # start_server(config.get('Web Server', 'host'), config.get('Web Server', 'port))
+    # start_server(config.get('Web Server', 'host'),
+    #              config.get('Web Server', 'port'),
+    #              config.get('web_server', 'debug'))  # Yes, 'web_server' also works here!
     #
     # Or if the config is in docstring, read from it:
     # config.read(__doc__)
     #
-    # Or if the config file is elsewhere::
+    # Or if the config file is elsewhere:
     # config.read('/etc/path/to/config.ini')
     #
     # Or create another instance for another config:
@@ -59,21 +64,21 @@ Now, let's do some inspection:
 
     # Iterate over sections and their keys/values
     for section in config:
-      print section                   # web_server
+      print section                    # web_server
 
       for key, value in config.items(section):
-        print key, value              # host 0.0.0.0
-                                      # port 8080
+        print key, value, type(value)  # host 0.0.0.0 <type 'str'>
+                                       # port 8080 <type 'int'>
+                                       # debug False <type 'bool'>
 
-    sections = list(config)           # ['web_server']
+    sections = list(config)            # ['web_server']
 
     # Iterate over keys/values
     for key, value in config.web_server:
-      print key, value                # host 0.0.0.0
-                                      # port 8080
+      print key, value, type(value)    # Same output as above config.items()
 
-    items = list(config.web_server)   # [('host', '0.0.0.0'), ('port', 8080)]
-    items = dict(config.web_server)   # {'host': '0.0.0.0', 'port': 8080}
+    items = list(config.web_server)    # [('host', '0.0.0.0'), ('port', 8080), ('debug', False)]
+    items = dict(config.web_server)    # {'host': '0.0.0.0', 'port': 8080, 'debug': False}
 
 To add a section and set a value:
 
@@ -102,11 +107,15 @@ If we open ~/.config/program now, we would see:
 .. code-block:: ini
 
     [Web Server]
+
     # Server host
     host = 0.0.0.0
 
     # Server port
     port = 8080
+
+    # Debug logging
+    debug = off
 
     # Settings for application server
     [App Server]
