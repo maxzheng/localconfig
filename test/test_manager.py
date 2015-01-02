@@ -86,6 +86,10 @@ class TestDotNotationConfig(object):
     config.read(StringIO(TEST_CONFIG))
     assert 'types' in config
 
+    assert [('multi_line', 'This line spans multiple lines and\nwill be written out as such. '
+                           'It will wrap\nwhere it originally wrapped.')] == list(config.items('another-section'))
+    assert list(config.items('another-section')) == list(config.items('another_section'))
+
   def test_write(self, config):
     temp_file = os.path.join(tempfile.gettempdir(), 'saved-localconfig')
     try:

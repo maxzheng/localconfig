@@ -40,7 +40,10 @@ To read the config, simply do:
 
     start_server(config.web_server.host, config.web_server.port)
 
-    # Or if the config is in docstring:
+    # Or use get method:
+    # start_server(config.get('Web Server', 'host'), config.get('Web Server', 'port))
+    #
+    # Or if the config is in docstring, read from it:
     # config.read(__doc__)
     #
     # Or if the config file is elsewhere::
@@ -54,13 +57,17 @@ Now, let's do some inspection:
 
 .. code-block:: python
 
-    # Iterate over sections
+    # Iterate over sections and their keys/values
     for section in config:
       print section                   # web_server
 
+      for key, value in config.items(section):
+        print key, value              # host 0.0.0.0
+                                      # port 8080
+
     sections = list(config)           # ['web_server']
 
-    # Iterate over items
+    # Iterate over keys/values
     for key, value in config.web_server:
       print key, value                # host 0.0.0.0
                                       # port 8080

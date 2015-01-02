@@ -77,7 +77,7 @@ class DotNotationConfig(object):
     :param file/str source: Config source string, file name, or file pointer.
     """
 
-    if isinstance(source, str) and is_config(source):
+    if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
       source_fp = StringIO(source)
     elif isinstance(source, file) or isinstance(source, StringIO):
       source_fp = source
@@ -164,13 +164,16 @@ class DotNotationConfig(object):
     """
     Get config value with data type transformation (from str)
 
-    :param str section: Section to get config for
-    :param str key: Key to get config for
+    :param str section: Section to get config for.
+    :param str key: Key to get config for.
     :param default: Default value for key if key was not found.
     :return: Value for the section/key or `default` if set and key does not exist.
     :raise NoOptionError: if the key does not exist and no default value is set.
     """
     self._read_last_source()
+
+    if (section, key) in self._dot_keys:
+      section, key = self._dot_keys[(section, key)]
 
     try:
       value = self._parser.get(section, key)
@@ -194,6 +197,11 @@ class DotNotationConfig(object):
 
     self._read_last_source()
 
+    if (section, key) in self._dot_keys:
+      section, key = self._dot_keys[(section, key)]
+    elif section in self._dot_keys:
+      section = self._dot_keys[section]
+
     if not isinstance(value, str):
       value = str(value)
 
@@ -201,7 +209,7 @@ class DotNotationConfig(object):
 
     self._add_dot_key(section, key)
     if comment:
-      self._add_comment(section, comment, key)
+      self._set_comment(section, comment, key)
 
   def _read_last_source(self):
     if not self._last_source_read:
@@ -227,28 +235,6 @@ class DotNotationConfig(object):
       self._value_cache[value] = new_value
 
     return self._value_cache[value]
-
-  def _dot_get(self, section, key, default=NO_DEFAULT_VALUE):
-    """ Same as :meth:`self.get` except the section / key are using dot notation format from `cls._to_dot_key' """
-
-    if not (section, key) in self._dot_keys:
-      if default == NO_DEFAULT_VALUE:
-        raise NoOptionError(key, section)
-      else:
-        return default
-
-    section, key = self._dot_keys[(section, key)]
-    return self.get(section, key, default)
-
-  def _dot_set(self, section, key, value):
-    """ Same as :meth:`self.set` except the section / key are using dot notation format from `cls._to_dot_key' """
-
-    if (section, key) in self._dot_keys:
-      section, key = self._dot_keys[(section, key)]
-      self.set(section, key, value)
-    else:
-      section = self._dot_keys[section]
-      self.set(section, key, value)
 
   def __getattr__(self, section):
     """
@@ -283,11 +269,11 @@ class DotNotationConfig(object):
     self._parser.add_section(section)
     self._add_dot_key(section)
     if comment:
-      self._add_comment(section, comment)
+      self._set_comment(section, comment)
 
-  def _add_comment(self, section, comment, key=None):
+  def _set_comment(self, section, comment, key=None):
     """
-    Add a comment by prefixing with '# '
+    Set a comment for section or key
 
     :param str section: Section to add comment to
     :param str comment: Comment to add
@@ -303,6 +289,23 @@ class DotNotationConfig(object):
     else:
       self._comments[section] = comment
 
+  def items(self, section):
+    """
+    Items for section with data type transformation (from str)
+
+    :param str section: Section to get items for.
+    :return: Generator of (key, value) for the section
+    """
+    self._read_last_source()
+
+    if section in self._dot_keys:
+      section = self._dot_keys[section]
+
+    for item in self._parser.items(section):
+      key, value = item
+      key = self._to_dot_key(key)
+      value = self._typed_value(value)
+      yield (key, value)
 
 class _SectionAccessor(object):
   """
@@ -329,7 +332,7 @@ class _SectionAccessor(object):
 
     :param str key: Config key to get value for
     """
-    return self._config._dot_get(self._section, key)
+    return self._config.get(self._section, key)
 
   def __setattr__(self, key, value):
     """
@@ -341,14 +344,7 @@ class _SectionAccessor(object):
     if key in ['_config', '_section']:
       super(_SectionAccessor, self).__setattr__(key, value)
     else:
-      return self._config._dot_set(self._section, key, value)
+      return self._config.set(self._section, key, value)
 
   def __iter__(self):
-    self._config._read_last_source()
-
-    section = self._config._dot_keys[self._section]
-    for item in self._config._parser.items(section):
-      key, value = item
-      key = self._config._to_dot_key(key)
-      value = self._config._typed_value(value)
-      yield (key, value)
+    return self._config.items(self._section)
