@@ -123,11 +123,15 @@ None    none (case insensitive)
 str     Any other value not matched by above
 ======= ===========================================
 
-Contribute / Report Bugs
-========================
+More
+====
 
 Documentation: http://localconfig.readthedocs.org/
 
 Github project: https://github.com/maxzheng/localconfig
 
 Report issues/bugs: https://github.com/maxzheng/localconfig/issues
+
+LinkedIn: https://www.linkedin.com/in/maxzheng
+
+Email: maxzheng.os @t gmail.com
