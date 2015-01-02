@@ -39,8 +39,9 @@ string-value = Value
 ####################################################
 [another-section]
 
-multi_line = This line spans multiple lines and will be written out as such. When
-    it is long enough, it will wrap.
+multi_line = This line spans multiple lines and
+    will be written out as such. It will wrap
+    where it originally wrapped.
 """
 
 
@@ -62,7 +63,7 @@ class TestDotNotationConfig(object):
     assert config.types.string_value == 'Value'
 
     assert config.another_section.multi_line == \
-      'This line spans multiple lines and will be written out as such. When\nit is long enough, it will wrap.'
+      'This line spans multiple lines and\nwill be written out as such. It will wrap\nwhere it originally wrapped.'
 
     with pytest.raises(NoSectionError):
       config.no_section

@@ -3,8 +3,6 @@ import os
 import re
 from StringIO import StringIO
 import sys
-import textwrap
-
 
 from localconfig.utils import is_float, is_int, is_long, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
 
@@ -17,7 +15,7 @@ class DotNotationConfig(object):
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
 
-  def __init__(self, last_source=None, interpolation=False, kv_sep=' = '):
+  def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4):
     """
     :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
                                  config value is made (delayed reading, hence "last") if it exists.
@@ -25,6 +23,7 @@ class DotNotationConfig(object):
                                  Defaults to ~/.config/<PROGRAM_NAME> (if available)
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
     :param str kv_sep: Separator for key and value. Used when saving self as string/file.
+    :param int indent_spaces: Number of spaces to use when indenting a value spanning multiple lines.
     """
     if not last_source and sys.argv:
       last_source = os.path.expanduser(os.path.join('~', '.config', os.path.basename(sys.argv[0])))
@@ -47,6 +46,9 @@ class DotNotationConfig(object):
     #: Seperator for key/value. Used for save only.
     self._kv_sep = kv_sep
 
+    #: Number of spaces to use when indenting a value spanning multiple lines.
+    self._indent_spaces = indent_spaces
+
     #: Cache to avoid transforming value too many times
     self._value_cache = {}
 
@@ -68,7 +70,7 @@ class DotNotationConfig(object):
     else:
       self._dot_keys[self._to_dot_key(section)] = section
 
-  def read(self, source=None):
+  def read(self, source):
     """
     Reads and parses the config source
 
@@ -98,7 +100,8 @@ class DotNotationConfig(object):
       for key, value in self._parser.items(section):
         if (section, key) in self._comments:
           output.append(self._comments[(section, key)])
-        output.append('%s%s%s\n' % (key, self._kv_sep, '\n'.join(textwrap.wrap(value, subsequent_indent='    '))))
+        value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
+        output.append('%s%s%s\n' % (key, self._kv_sep, value))
 
     return '\n'.join(output)
 
@@ -188,6 +191,7 @@ class DotNotationConfig(object):
     :param value: Value for key. It can be any primitive type.
     :param str comment: Comment for the key
     """
+
     self._read_last_source()
 
     if not isinstance(value, str):
@@ -207,6 +211,7 @@ class DotNotationConfig(object):
 
   def _typed_value(self, value):
     """ Transform string value to an actual data type of the same value. """
+
     if value not in self._value_cache:
       new_value = value
       if is_int(value):
@@ -225,6 +230,7 @@ class DotNotationConfig(object):
 
   def _dot_get(self, section, key, default=NO_DEFAULT_VALUE):
     """ Same as :meth:`self.get` except the section / key are using dot notation format from `cls._to_dot_key' """
+
     if not (section, key) in self._dot_keys:
       if default == NO_DEFAULT_VALUE:
         raise NoOptionError(key, section)
@@ -236,6 +242,7 @@ class DotNotationConfig(object):
 
   def _dot_set(self, section, key, value):
     """ Same as :meth:`self.set` except the section / key are using dot notation format from `cls._to_dot_key' """
+
     if (section, key) in self._dot_keys:
       section, key = self._dot_keys[(section, key)]
       self.set(section, key, value)
