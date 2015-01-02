@@ -143,6 +143,11 @@ None    none (case insensitive)
 str     Any other value not matched by above
 ======= ===========================================
 
+Remote Config
+=============
+
+Check out: https://pypi.python.org/pypi/remoteconfig
+
 More
 ====
 
