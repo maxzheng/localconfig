@@ -21,7 +21,9 @@ To install::
 
     pip install localconfig
 
-Let's say we have a script named 'program' with the following config in ~/.config/program::
+Let's say we have a script named 'program' with the following config in ~/.config/program:
+
+.. code-block:: ini
 
     [Web Server]
     # Server host
@@ -84,7 +86,9 @@ To write the config:
     # Or save to a different location:
     # config.save('/path/to/save/to.ini')
 
-If we open ~/.config/program now, we would see::
+If we open ~/.config/program now, we would see:
+
+.. code-block:: ini
 
     [Web Server]
     # Server host
