@@ -6,6 +6,7 @@ import setuptools
 
 setuptools.setup(
   name='localconfig',
+  url='https://github.com/maxzheng/localconfig',
   version='0.2.11',
 
   author='Max Zheng',
