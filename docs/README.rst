@@ -45,6 +45,10 @@ To read the config, simply do:
     #
     # Or if the config file is elsewhere::
     # config.read('/etc/path/to/config.ini')
+    #
+    # Or create another instance for another config:
+    # from localconfig import DotNotionConfig
+    # config2 = DotNotionConfig('/etc/path/to/another/config.ini')
 
 Now, let's do some inspection:
 
