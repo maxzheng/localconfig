@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from localconfig.manager import DotNotionConfig, NoSectionError, DuplicateSectionError, NoOptionError
+from localconfig.manager import DotNotationConfig, NoSectionError, DuplicateSectionError, NoOptionError
 
 
 TEST_CONFIG = """\
@@ -46,7 +46,7 @@ multi_line = This line spans multiple lines and will be written out as such. Whe
 
 @pytest.fixture
 def config():
-  config = DotNotionConfig()
+  config = DotNotationConfig()
   config.read(TEST_CONFIG)
   return config
 
@@ -81,7 +81,7 @@ class TestDotNotationConfig(object):
       'types': '# Section used for type testing'
     } == config._comments
 
-    config = DotNotionConfig()
+    config = DotNotationConfig()
     config.read(StringIO(TEST_CONFIG))
     assert 'types' in config
 
@@ -92,7 +92,7 @@ class TestDotNotationConfig(object):
       saved_config = open(temp_file).read()
       assert TEST_CONFIG == saved_config
 
-      config2 = DotNotionConfig(last_source=temp_file)
+      config2 = DotNotationConfig(last_source=temp_file)
       config2.read('[types]\nint = 5')
       assert TEST_CONFIG == str(config2)
 
@@ -114,7 +114,7 @@ class TestDotNotationConfig(object):
     assert 'yes = True' in str(config)
 
   def test_sep(self):
-    config = DotNotionConfig(kv_sep=': ')
+    config = DotNotationConfig(kv_sep=': ')
     config.read(TEST_CONFIG)
     assert 'int: 1' in str(config)
 

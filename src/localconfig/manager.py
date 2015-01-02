@@ -12,7 +12,7 @@ NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
 NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
 
 
-class DotNotionConfig(object):
+class DotNotationConfig(object):
   """
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
@@ -301,7 +301,7 @@ class _SectionAccessor(object):
   """
   Provides access (read/write/iter) for a config section.
 
-  This is a private class and it is only outside of DotNotionConfig because `super` doesn't work with
+  This is a private class and it is only outside of DotNotationConfig because `super` doesn't work with
   private class in __new__.
   """
   _instances = {}

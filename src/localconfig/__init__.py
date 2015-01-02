@@ -1,3 +1,3 @@
-from localconfig.manager import DotNotionConfig
+from localconfig.manager import DotNotationConfig
 
-config = DotNotionConfig()
+config = DotNotationConfig()
