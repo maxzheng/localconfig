@@ -64,14 +64,14 @@ Now, let's do some inspection:
 
     # Iterate over sections and their keys/values
     for section in config:
-      print section                    # web_server
+      print section                    # Web Server
 
       for key, value in config.items(section):
         print key, value, type(value)  # host 0.0.0.0 <type 'str'>
                                        # port 8080 <type 'int'>
                                        # debug False <type 'bool'>
 
-    sections = list(config)            # ['web_server']
+    sections = list(config)            # ['Web Server']
 
     # Iterate over keys/values
     for key, value in config.web_server:

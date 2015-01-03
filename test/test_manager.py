@@ -33,6 +33,7 @@ none = None
 # A string value
 string-value = Value
 
+
 ####################################################
 # Another section
 # with multiline comments
@@ -124,7 +125,7 @@ class TestDotNotationConfig(object):
     assert 'int: 1' in str(config)
 
   def test_iter(self, config):
-    assert list(config) == ['types', 'another_section']
+    assert list(config) == ['types', 'another-section']
     assert [
       ('int', 1),
       ('float', 2.0),
@@ -132,11 +133,11 @@ class TestDotNotationConfig(object):
       ('true', True),
       ('false', False),
       ('none', None),
-      ('string_value', 'Value')] == list(config.types)
+      ('string-value', 'Value')] == list(config.types)
     assert {
       'false': False,
       'none': None,
-      'string_value': 'Value',
+      'string-value': 'Value',
       'int': 1,
       'float': 2.0,
       'long': 3L,

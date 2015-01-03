@@ -15,21 +15,24 @@ class DotNotationConfig(object):
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
 
-  def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4):
+  def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
     """
     :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
                                  config value is made (delayed reading, hence "last") if it exists.
                                  It is also the default target file location for :meth:`self.save`
-                                 Defaults to ~/.config/<PROGRAM_NAME> (if available)
+                                 Defaults to ~/.config/<PROGRAM_NAME> (if exists)
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
-    :param str kv_sep: Separator for key and value. Used when saving self as string/file.
-    :param int indent_spaces: Number of spaces to use when indenting a value spanning multiple lines.
+    :param str kv_sep: When serializing, separator used for key and value.
+    :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
+    :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
     """
     if not last_source and sys.argv:
-      last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
+      user_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
+      if os.path.exists(user_source):
+        last_source = user_source
 
     #: User config file name
-    self._last_source = os.path.expanduser(last_source)
+    self._last_source = last_source and os.path.expanduser(last_source)
 
     #: Indicate if `self._last_source` has been read
     self._last_source_read = False
@@ -48,6 +51,9 @@ class DotNotationConfig(object):
 
     #: Number of spaces to use when indenting a value spanning multiple lines.
     self._indent_spaces = indent_spaces
+
+    #: Save in compact form (no newline between keys)
+    self._compact_form = compact_form
 
     #: Cache to avoid transforming value too many times
     self._value_cache = {}
@@ -91,17 +97,21 @@ class DotNotationConfig(object):
     self._read_last_source()
 
     output = []
+    extra_newline = '' if self._compact_form else '\n'
 
     for section in self._parser.sections():
+      if output:
+        output.append('')
+
       if section in self._comments:
         output.append(self._comments[section])
-      output.append('[%s]\n' % section)
+      output.append('[%s]%s' % (section, extra_newline))
 
       for key, value in self._parser.items(section):
         if (section, key) in self._comments:
           output.append(self._comments[(section, key)])
         value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
-        output.append('%s%s%s\n' % (key, self._kv_sep, value))
+        output.append('%s%s%s%s' % (key, self._kv_sep, value, extra_newline))
 
     return '\n'.join(output)
 
@@ -110,10 +120,13 @@ class DotNotationConfig(object):
     """
     Save the config
 
-    :param str target_file: File to save to. Defaults to `self._last_source`
+    :param str target_file: File to save to. Defaults to `self._last_source` if set
     :param bool as_template: Save the config with all keys and sections commented out for user to modify
+    :raise AttributeError: if target file is not provided and `self._last_source` is not set
     """
     if not target_file:
+      if not self._last_source:
+        raise AttributeError('target_file is required when last source is not set during instantiation')
       target_file = self._last_source
 
     output = str(self)
@@ -212,9 +225,8 @@ class DotNotationConfig(object):
       self._set_comment(section, comment, key)
 
   def _read_last_source(self):
-    if not self._last_source_read:
-      if os.path.exists(self._last_source):
-        self.read(self._last_source)
+    if not self._last_source_read and self._last_source:
+      self.read(self._last_source)
       self._last_source_read = True
 
   def _typed_value(self, value):
@@ -252,7 +264,7 @@ class DotNotationConfig(object):
     self._read_last_source()
 
     for section in self._parser.sections():
-      yield self._to_dot_key(section)
+      yield section
 
   def add_section(self, section, comment=None):
     """
@@ -303,7 +315,6 @@ class DotNotationConfig(object):
 
     for item in self._parser.items(section):
       key, value = item
-      key = self._to_dot_key(key)
       value = self._typed_value(value)
       yield (key, value)
 
