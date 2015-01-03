@@ -12,10 +12,9 @@ Welcome to localconfig's documentation!
    README
 
 .. toctree::
-   :maxdepth: 0
    :hidden:
 
-   CHANGELOG
+   Change Log <CHANGELOG>
 
 API Documentation
 =================
