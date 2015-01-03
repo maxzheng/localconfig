@@ -155,7 +155,7 @@ More
 | Documentation: http://localconfig.readthedocs.org/
 | Changes: http://localconfig.readthedocs.org/en/latest/CHANGELOG.html
 |
-| PyPi Package: https://pypi.python.org/pypi/localconfig
+| PyPI Package: https://pypi.python.org/pypi/localconfig
 | Github Source: https://github.com/maxzheng/localconfig
 | Report Issues/Bugs: https://github.com/maxzheng/localconfig/issues
 |
