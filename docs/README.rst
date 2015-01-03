@@ -152,12 +152,12 @@ Check out: https://pypi.python.org/pypi/remoteconfig
 More
 ====
 
-Documentation: http://localconfig.readthedocs.org/
-
-Github project: https://github.com/maxzheng/localconfig
-
-Report issues/bugs: https://github.com/maxzheng/localconfig/issues
-
-LinkedIn: https://www.linkedin.com/in/maxzheng
-
-Email: maxzheng.os @t gmail.com
+| Documentation: http://localconfig.readthedocs.org/
+| Changes: http://localconfig.readthedocs.org/en/latest/CHANGELOG.html
+|
+| PyPi Package: https://pypi.python.org/pypi/localconfig
+| Github Source: https://github.com/maxzheng/localconfig
+| Report Issues/Bugs: https://github.com/maxzheng/localconfig/issues
+|
+| Connect: https://www.linkedin.com/in/maxzheng
+| Contact: maxzheng.os @t gmail.com
