@@ -11,6 +11,11 @@ Welcome to localconfig's documentation!
 
    README
 
+.. toctree::
+   :hidden:
+
+   CHANGELOG
+
 API Documentation
 =================
 
