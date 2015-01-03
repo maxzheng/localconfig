@@ -15,6 +15,8 @@ class DotNotationConfig(object):
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
 
+  LAST_COMMENT_KEY = 'LAST_COMMENT_KEY'
+
   def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
     """
     :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
@@ -100,11 +102,11 @@ class DotNotationConfig(object):
     extra_newline = '' if self._compact_form else '\n'
 
     for section in self._parser.sections():
-      if output:
-        output.append('')
-
       if section in self._comments:
         output.append(self._comments[section])
+      elif output:
+        output.append('')
+
       output.append('[%s]%s' % (section, extra_newline))
 
       for key, value in self._parser.items(section):
@@ -112,6 +114,9 @@ class DotNotationConfig(object):
           output.append(self._comments[(section, key)])
         value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
         output.append('%s%s%s%s' % (key, self._kv_sep, value, extra_newline))
+
+    if self.LAST_COMMENT_KEY in self._comments:
+      output.append(self._comments[self.LAST_COMMENT_KEY])
 
     return '\n'.join(output)
 
@@ -153,6 +158,8 @@ class DotNotationConfig(object):
       line = line.rstrip()
 
       if not line:
+        if comment:
+          comment += '\n'
         continue
 
       if line.startswith('#'):  # Comment
@@ -172,6 +179,9 @@ class DotNotationConfig(object):
           self._comments[(section, key)] = comment.rstrip()
 
       comment = ''
+
+    if comment:
+      self._comments[self.LAST_COMMENT_KEY] = comment
 
   def get(self, section, key, default=NO_DEFAULT_VALUE):
     """

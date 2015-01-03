@@ -117,6 +117,7 @@ If we open ~/.config/program now, we would see:
     # Debug logging
     debug = off
 
+
     # Settings for application server
     [App Server]
 

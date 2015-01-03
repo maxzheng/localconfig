@@ -21,6 +21,9 @@ float = 2.0
 # A long value
 long = 3L
 
+# A mid-commented out
+# comment = value
+
 # A bool value
 true = True
 
@@ -33,6 +36,9 @@ none = None
 # A string value
 string-value = Value
 
+# A commented out value
+# comment = value
+
 
 ####################################################
 # Another section
@@ -43,6 +49,42 @@ string-value = Value
 multi_line = This line spans multiple lines and
     will be written out as such. It will wrap
     where it originally wrapped.
+
+# Comment at the end
+"""
+COMPACT_TEST_CONFIG = """\
+# Section used for type testing
+[types]
+# An int value
+int: 1
+# A float value
+float: 2.0
+# A long value
+long: 3L
+# A mid-commented out
+# comment = value
+
+# A bool value
+true: True
+# A false bool value
+false: False
+# A None value
+none: None
+# A string value
+string-value: Value
+# A commented out value
+# comment = value
+
+
+####################################################
+# Another section
+# with multiline comments
+####################################################
+[another-section]
+multi_line: This line spans multiple lines and
+  will be written out as such. It will wrap
+  where it originally wrapped.
+# Comment at the end
 """
 
 
@@ -76,11 +118,12 @@ class TestDotNotationConfig(object):
       ('types', 'int'): '# An int value',
       ('types', 'float'): '# A float value',
       ('types', 'long'): '# A long value',
-      ('types', 'true'): '# A bool value',
+      ('types', 'true'): '# A mid-commented out\n# comment = value\n\n# A bool value',
       ('types', 'false'): '# A false bool value',
       ('types', 'none'): '# A None value',
-      'another-section': '####################################################\n# Another section\n# with multiline comments\n####################################################',
-      'types': '# Section used for type testing'
+      'another-section': '# A commented out value\n# comment = value\n\n\n####################################################\n# Another section\n# with multiline comments\n####################################################',
+      'types': '# Section used for type testing',
+      'LAST_COMMENT_KEY': '# Comment at the end\n'
     } == config._comments
 
     config = DotNotationConfig()
@@ -108,6 +151,11 @@ class TestDotNotationConfig(object):
     finally:
       if os.path.exists(temp_file):
         os.unlink(temp_file)
+
+  def test_output_style(self):
+    config = DotNotationConfig(kv_sep=': ', indent_spaces=2, compact_form=True)
+    config.read(TEST_CONFIG)
+    assert COMPACT_TEST_CONFIG == str(config)
 
   def test_set(self, config):
     assert config.types.int == 1
