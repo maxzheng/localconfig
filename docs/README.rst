@@ -153,10 +153,9 @@ More
 ====
 
 | Documentation: http://localconfig.readthedocs.org/
-| Changes: http://localconfig.readthedocs.org/en/latest/CHANGELOG.html
 |
 | PyPI Package: https://pypi.python.org/pypi/localconfig
-| Github Source: https://github.com/maxzheng/localconfig
+| GitHub Source: https://github.com/maxzheng/localconfig
 | Report Issues/Bugs: https://github.com/maxzheng/localconfig/issues
 |
 | Connect: https://www.linkedin.com/in/maxzheng
