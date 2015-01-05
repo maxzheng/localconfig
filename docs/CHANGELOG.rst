@@ -1,5 +1,11 @@
-Version 0.3.4
+Version 0.3.5
 ================================================================================
+
+* Only read config file if exists
+
+
+Version 0.3.4
+--------------------------------------------------------------------------------
 
 * Remove __new__ use as it does not work as expected and move SectionAccessor back into DotNotationConfig as private class
 
