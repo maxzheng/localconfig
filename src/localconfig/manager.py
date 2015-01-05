@@ -124,13 +124,13 @@ class DotNotationConfig(object):
       source_fp = source
     elif os.path.exists(source):
       source_fp = open(source)
-
-    if source_fp:
-      self._parser.readfp(source_fp)
-      self._parse_extra(source_fp)
-      return True
     else:
       return False
+
+    self._parser.readfp(source_fp)
+    self._parse_extra(source_fp)
+
+    return True
 
   def __str__(self):
     self._read_last_source()
