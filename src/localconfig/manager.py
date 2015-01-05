@@ -114,18 +114,23 @@ class DotNotationConfig(object):
     """
     Reads and parses the config source
 
-    :param file/str source: Config source string, file name, or file pointer.
+    :param file/str source: Config source string, file name, or file pointer. If file name does not exist, it is ignored.
+    :return: True if source was successfully read, otherwise False
     """
 
     if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
       source_fp = StringIO(source)
     elif isinstance(source, file) or isinstance(source, StringIO):
       source_fp = source
-    else:
+    elif os.path.exists(source):
       source_fp = open(source)
 
-    self._parser.readfp(source_fp)
-    self._parse_extra(source_fp)
+    if source_fp:
+      self._parser.readfp(source_fp)
+      self._parse_extra(source_fp)
+      return True
+    else:
+      return False
 
   def __str__(self):
     self._read_last_source()
