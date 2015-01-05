@@ -17,6 +17,38 @@ class DotNotationConfig(object):
 
   LAST_COMMENT_KEY = 'LAST_COMMENT_KEY'
 
+  class SectionAccessor(object):
+    """
+    Provides access (read/write/iter) for a config section.
+    """
+
+    def __init__(self, config, section):
+        self._config = config
+        self._section = section
+
+    def __getattr__(self, key):
+      """
+      Get config value
+
+      :param str key: Config key to get value for
+      """
+      return self._config.get(self._section, key)
+
+    def __setattr__(self, key, value):
+      """
+      Set config value
+
+      :param str key: Config key to set value for
+      :param str value: Config value to set to
+      """
+      if key in ['_config', '_section']:
+        super(DotNotationConfig.SectionAccessor, self).__setattr__(key, value)
+      else:
+        return self._config.set(self._section, key, value)
+
+    def __iter__(self):
+      return self._config.items(self._section)
+
   def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
     """
     :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
@@ -263,11 +295,11 @@ class DotNotationConfig(object):
     Get a section
 
     :param str section: Section to get
-    :rtype: :class:`_SectionAccessor`
+    :rtype: :class:`DotNotationConfig.SectionAccessor`
     :raise NoSectionError: if section does not exist
     """
     if section in self._dot_keys:
-      return _SectionAccessor(self, section)
+      return self.SectionAccessor(self, section)
     raise NoSectionError(section)
 
   def __iter__(self):
@@ -328,44 +360,3 @@ class DotNotationConfig(object):
       value = self._typed_value(value)
       yield (key, value)
 
-class _SectionAccessor(object):
-  """
-  Provides access (read/write/iter) for a config section.
-
-  This is a private class and it is only outside of DotNotationConfig because `super` doesn't work with
-  private class in __new__.
-  """
-  _instances = {}
-
-  def __new__(cls, config, section):
-    if (config, section) in cls._instances:
-      return cls._instances[(config, section)]
-    else:
-      return super(_SectionAccessor, cls).__new__(cls, config, section)
-
-  def __init__(self, config, section):
-    self._config = config
-    self._section = section
-
-  def __getattr__(self, key):
-    """
-    Get config value
-
-    :param str key: Config key to get value for
-    """
-    return self._config.get(self._section, key)
-
-  def __setattr__(self, key, value):
-    """
-    Set config value
-
-    :param str key: Config key to set value for
-    :param str value: Config value to set to
-    """
-    if key in ['_config', '_section']:
-      super(_SectionAccessor, self).__setattr__(key, value)
-    else:
-      return self._config.set(self._section, key, value)
-
-  def __iter__(self):
-    return self._config.items(self._section)
