@@ -9,8 +9,9 @@ Feature Summary
 * Simple access to config using dot notion and iterators
 * Full compatibility with `ConfigParser`_ ini formats (as that is used as the backend)
 * Data type support by intelligently guessing the data types based on value on read.
-* Multiple config source input (read from string, file pointer, or file)
+* Multiple config source input (read from string, file pointer, file, or list of them)
 * Full comment support / retention on save
+* Lazy reading of config sources for performance (only read when a config value is accessed)
 
 .. _ConfigParser: https://docs.python.org/2/library/configparser.html
 
@@ -52,11 +53,14 @@ To read the config, simply do:
     # config.read(__doc__)
     #
     # Or if the config file is elsewhere:
-    # config.read('/etc/path/to/config.ini')
+    # config.read('/etc/path/to/config.ini')  # Non-existing file is ignored
     #
     # Or create another instance for another config:
     # from localconfig import LocalConfig
     # config2 = LocalConfig('/etc/path/to/another/config.ini')
+    #
+    # Or read from a list of sources
+    # config.read(['string config', file_name, fp, StringIO('config')])
 
 Now, let's do some inspection:
 

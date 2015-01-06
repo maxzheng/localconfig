@@ -54,22 +54,25 @@ class LocalConfig(object):
     :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
                                  config value is made (delayed reading, hence "last") if it exists.
                                  It is also the default target file location for :meth:`self.save`
-                                 Defaults to ~/.config/<PROGRAM_NAME> (if exists)
+                                 For file source, if the file does not exist, it is ignored.
+                                 Defaults to ~/.config/<PROGRAM_NAME>.
+
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
     :param str kv_sep: When serializing, separator used for key and value.
     :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
     :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
     """
     if not last_source and sys.argv:
-      user_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
-      if os.path.exists(user_source):
-        last_source = user_source
+      last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
 
     #: User config file name
     self._last_source = last_source and os.path.expanduser(last_source)
 
-    #: Indicate if `self._last_source` has been read
-    self._last_source_read = False
+    #: Config sources
+    self._sources = []
+
+    #: Indicate if `self._sources` has been read
+    self._sources_read = False
 
     #: Parser instance from ConfigParser that does the underlying config parsing
     self._parser = SafeConfigParser() if interpolation else RawConfigParser()
@@ -110,7 +113,33 @@ class LocalConfig(object):
     else:
       self._dot_keys[self._to_dot_key(section)] = section
 
-  def read(self, source):
+  def read(self, sources):
+    """
+    Queues the config sources to be read later (when config is accessed), or reads immediately if config has already been
+    accessed.
+
+    :param file/str/list sources: Config source string, file name, or file pointer, or list of the other sources.
+                                  If file source does not exist, it is ignored.
+    :return: True if all sources were successfully read or will be read, otherwise False
+    """
+
+    all_read = True
+
+    if not isinstance(sources, list):
+      sources = [sources]
+
+    if self._sources_read:
+      for source in sources:
+          all_read &= self._read(source)
+    else:
+      for i, source in enumerate(sources):
+        if isinstance(source, file):
+          sources[i] = source.read()
+      self._sources.extend(sources)
+
+    return all_read
+
+  def _read(self, source):
     """
     Reads and parses the config source
 
@@ -133,7 +162,7 @@ class LocalConfig(object):
     return True
 
   def __str__(self):
-    self._read_last_source()
+    self._read_sources()
 
     output = []
     extra_newline = '' if self._compact_form else '\n'
@@ -166,6 +195,8 @@ class LocalConfig(object):
     :param bool as_template: Save the config with all keys and sections commented out for user to modify
     :raise AttributeError: if target file is not provided and `self._last_source` is not set
     """
+    self._read_sources()
+
     if not target_file:
       if not self._last_source:
         raise AttributeError('target_file is required when last source is not set during instantiation')
@@ -230,7 +261,7 @@ class LocalConfig(object):
     :return: Value for the section/key or `default` if set and key does not exist.
     :raise NoOptionError: if the key does not exist and no default value is set.
     """
-    self._read_last_source()
+    self._read_sources()
 
     if (section, key) in self._dot_keys:
       section, key = self._dot_keys[(section, key)]
@@ -255,7 +286,7 @@ class LocalConfig(object):
     :param str comment: Comment for the key
     """
 
-    self._read_last_source()
+    self._read_sources()
 
     if (section, key) in self._dot_keys:
       section, key = self._dot_keys[(section, key)]
@@ -271,10 +302,16 @@ class LocalConfig(object):
     if comment:
       self._set_comment(section, comment, key)
 
-  def _read_last_source(self):
-    if not self._last_source_read and self._last_source:
-      self.read(self._last_source)
-      self._last_source_read = True
+  def _read_sources(self):
+    if self._sources_read:
+      return
+
+    for source in self._sources:
+      self._read(source)
+
+    self._read(self._last_source)
+
+    self._sources_read = True
 
   def _typed_value(self, value):
     """ Transform string value to an actual data type of the same value. """
@@ -303,12 +340,14 @@ class LocalConfig(object):
     :rtype: :class:`LocalConfig.SectionAccessor`
     :raise NoSectionError: if section does not exist
     """
+    self._read_sources()
+
     if section in self._dot_keys:
       return self.SectionAccessor(self, section)
     raise NoSectionError(section)
 
   def __iter__(self):
-    self._read_last_source()
+    self._read_sources()
 
     for section in self._parser.sections():
       yield section
@@ -320,7 +359,7 @@ class LocalConfig(object):
     :param str section: Section to add
     :raise DuplicateSectionError: if section already exist.
     """
-    self._read_last_source()
+    self._read_sources()
 
     if self._to_dot_key(section) in self._dot_keys:
       raise DuplicateSectionError(section)
@@ -355,7 +394,7 @@ class LocalConfig(object):
     :param str section: Section to get items for.
     :return: Generator of (key, value) for the section
     """
-    self._read_last_source()
+    self._read_sources()
 
     if section in self._dot_keys:
       section = self._dot_keys[section]

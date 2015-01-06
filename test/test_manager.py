@@ -134,6 +134,33 @@ class TestLocalConfig(object):
                            'It will wrap\nwhere it originally wrapped.')] == list(config.items('another-section'))
     assert list(config.items('another-section')) == list(config.items('another_section'))
 
+  def test_read_sources(self):
+    last_source_path = os.path.join(os.path.dirname(__file__), 'last_source.cfg')
+    config = LocalConfig(last_source_path)
+
+    second_source = StringIO('[sources]\nsecond_source = second\nsource = second')
+    assert config.read([TEST_CONFIG, second_source, 'non-existing-file.cfg'])
+
+    third_source_path = os.path.join(os.path.dirname(__file__), 'third_source.cfg')
+    with open(third_source_path) as fp:
+      assert config.read(fp)
+
+    assert len(config._sources) == 4
+    assert config._sources_read == False
+
+    assert config.types.int == 1
+    assert config.sources.second_source == 'second'
+    assert config.sources.third_source == 'third'
+    assert config.sources.source == 'last'
+
+    assert config._sources_read == True
+
+    assert config.read('[sources]\nsource = updated')
+
+    assert config.sources.source == 'updated'
+
+    assert not config.read('non-existing-file.cfg')
+
   def test_write(self, config):
     temp_file = os.path.join(tempfile.gettempdir(), 'saved-localconfig')
     try:
