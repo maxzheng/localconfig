@@ -1,3 +1,11 @@
+Version 0.4.0
+================================================================================
+
+* Lazy read configs on access and support list of sources
+
+* Rename DotNotationConfig to LocalConfig
+
+
 Version 0.3.6
 ================================================================================
 
