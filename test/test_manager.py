@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from localconfig.manager import DotNotationConfig, NoSectionError, DuplicateSectionError, NoOptionError
+from localconfig.manager import LocalConfig, NoSectionError, DuplicateSectionError, NoOptionError
 
 
 TEST_CONFIG = """\
@@ -90,12 +90,12 @@ multi_line: This line spans multiple lines and
 
 @pytest.fixture
 def config():
-  config = DotNotationConfig()
+  config = LocalConfig()
   config.read(TEST_CONFIG)
   return config
 
 
-class TestDotNotationConfig(object):
+class TestLocalConfig(object):
   def test_read(self, config):
     assert config.types.int == 1
     assert config.types.float == 2.0
@@ -126,7 +126,7 @@ class TestDotNotationConfig(object):
       'LAST_COMMENT_KEY': '# Comment at the end\n'
     } == config._comments
 
-    config = DotNotationConfig()
+    config = LocalConfig()
     config.read(StringIO(TEST_CONFIG))
     assert 'types' in config
 
@@ -141,7 +141,7 @@ class TestDotNotationConfig(object):
       saved_config = open(temp_file).read()
       assert TEST_CONFIG == saved_config
 
-      config2 = DotNotationConfig(last_source=temp_file)
+      config2 = LocalConfig(last_source=temp_file)
       config2.read('[types]\nint = 5')
       assert TEST_CONFIG == str(config2)
 
@@ -153,7 +153,7 @@ class TestDotNotationConfig(object):
         os.unlink(temp_file)
 
   def test_output_style(self):
-    config = DotNotationConfig(kv_sep=': ', indent_spaces=2, compact_form=True)
+    config = LocalConfig(kv_sep=': ', indent_spaces=2, compact_form=True)
     config.read(TEST_CONFIG)
     assert COMPACT_TEST_CONFIG == str(config)
 
@@ -168,7 +168,7 @@ class TestDotNotationConfig(object):
     assert 'yes = True' in str(config)
 
   def test_sep(self):
-    config = DotNotationConfig(kv_sep=': ')
+    config = LocalConfig(kv_sep=': ')
     config.read(TEST_CONFIG)
     assert 'int: 1' in str(config)
 

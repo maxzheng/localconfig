@@ -1,3 +1,3 @@
-from localconfig.manager import DotNotationConfig
+from localconfig.manager import LocalConfig
 
-config = DotNotationConfig()
+config = LocalConfig()

@@ -1,5 +1,5 @@
-Dot Notation Config Manager
-===========================
+LocalConfig
+===========
 
 .. automodule:: localconfig.manager
    :members:

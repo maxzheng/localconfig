@@ -55,8 +55,8 @@ To read the config, simply do:
     # config.read('/etc/path/to/config.ini')
     #
     # Or create another instance for another config:
-    # from localconfig import DotNotationConfig
-    # config2 = DotNotationConfig('/etc/path/to/another/config.ini')
+    # from localconfig import LocalConfig
+    # config2 = LocalConfig('/etc/path/to/another/config.ini')
 
 Now, let's do some inspection:
 

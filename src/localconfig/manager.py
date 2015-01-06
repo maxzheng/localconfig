@@ -10,7 +10,7 @@ NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
 NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
 
 
-class DotNotationConfig(object):
+class LocalConfig(object):
   """
   Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
   """
@@ -42,7 +42,7 @@ class DotNotationConfig(object):
       :param str value: Config value to set to
       """
       if key in ['_config', '_section']:
-        super(DotNotationConfig.SectionAccessor, self).__setattr__(key, value)
+        super(LocalConfig.SectionAccessor, self).__setattr__(key, value)
       else:
         return self._config.set(self._section, key, value)
 
@@ -300,7 +300,7 @@ class DotNotationConfig(object):
     Get a section
 
     :param str section: Section to get
-    :rtype: :class:`DotNotationConfig.SectionAccessor`
+    :rtype: :class:`LocalConfig.SectionAccessor`
     :raise NoSectionError: if section does not exist
     """
     if section in self._dot_keys:
