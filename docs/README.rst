@@ -55,12 +55,12 @@ To read the config, simply do:
     # Or if the config file is elsewhere:
     # config.read('/etc/path/to/config.ini')  # Non-existing file is ignored
     #
+    # Or read from a list of sources
+    # config.read(['string config', file_path, file_pointer, StringIO('config')])
+    #
     # Or create another instance for another config:
     # from localconfig import LocalConfig
     # config2 = LocalConfig('/etc/path/to/another/config.ini')
-    #
-    # Or read from a list of sources
-    # config.read(['string config', file_name, fp, StringIO('config')])
 
 Now, let's do some inspection:
 
