@@ -1,5 +1,22 @@
-Version 0.4.0
+Version 0.4.1
 ================================================================================
+
+* Update tox.ini
+
+* Update tox.ini to run test by default
+
+* Ensure last source isn't set to empty string by checking sys.arg[0]
+  And skip reading last source when it isn't set.
+
+* Remove ln whitelist from tox
+
+* Remove activate symlink
+
+* Update doc
+
+
+Version 0.4.0
+--------------------------------------------------------------------------------
 
 * Lazy read configs on access and support list of sources
 
