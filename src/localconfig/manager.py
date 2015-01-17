@@ -51,18 +51,18 @@ class LocalConfig(object):
 
   def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
     """
-    :param file/str last_source: Last config source file name. This source is only read when an attempt to read a
+    :param file/str last_source: Last config source file name. This source is read last when an attempt to read a
                                  config value is made (delayed reading, hence "last") if it exists.
                                  It is also the default target file location for :meth:`self.save`
                                  For file source, if the file does not exist, it is ignored.
-                                 Defaults to ~/.config/<PROGRAM_NAME>.
+                                 Defaults to ~/.config/<PROGRAM_NAME>
 
     :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
     :param str kv_sep: When serializing, separator used for key and value.
     :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
     :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
     """
-    if not last_source and sys.argv:
+    if not last_source and sys.argv and sys.argv[0]:
       last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
 
     #: User config file name
@@ -199,7 +199,7 @@ class LocalConfig(object):
 
     if not target_file:
       if not self._last_source:
-        raise AttributeError('target_file is required when last source is not set during instantiation')
+        raise AttributeError('Target file is required when last source is not set during instantiation')
       target_file = self._last_source
 
     output = str(self)
@@ -309,7 +309,8 @@ class LocalConfig(object):
     for source in self._sources:
       self._read(source)
 
-    self._read(self._last_source)
+    if self._last_source:
+      self._read(self._last_source)
 
     self._sources_read = True
 
