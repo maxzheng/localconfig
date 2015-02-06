@@ -11,13 +11,10 @@ setuptools.setup(
   author='Max Zheng',
   author_email='maxzheng.os @t gmail.com',
 
-  description=open('README.rst').read(),
+  description='A simplified interface to ConfigParser using dot notion with data type / comment support.',
+  long_description=open('README.rst').read(),
 
-#  entry_points={
-#    'console_scripts': [
-#      'script_name = package.module:entry_callable',
-#    ],
-#  },
+  url='https://github.com/maxzheng/localconfig',
 
   install_requires=[
   ],
@@ -36,7 +33,7 @@ setuptools.setup(
     'Development Status :: 5 - Production/Stable',
 
     'Intended Audience :: Developers',
-    'Topic :: Software Development :: Configuration',
+    'Topic :: Software Development',
 
     'License :: OSI Approved :: MIT License',
 
