@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from localconfig.manager import LocalConfig, NoSectionError, DuplicateSectionError, NoOptionError
+from localconfig.manager import LocalConfig, DuplicateSectionError
 
 
 TEST_CONFIG = """\
@@ -100,18 +100,16 @@ class TestLocalConfig(object):
     assert config.types.int == 1
     assert config.types.float == 2.0
     assert config.types.long == 3L
-    assert config.types.true == True
-    assert config.types.false == False
+    assert config.types.true is True
+    assert config.types.false is False
     assert config.types.none is None
     assert config.types.string_value == 'Value'
 
-    assert config.another_section.multi_line == \
-      'This line spans multiple lines and\nwill be written out as such. It will wrap\nwhere it originally wrapped.'
+    assert (config.another_section.multi_line ==
+            'This line spans multiple lines and\nwill be written out as such. It will wrap\nwhere it originally wrapped.')
 
-    with pytest.raises(NoSectionError):
-      config.no_section
-    with pytest.raises(NoOptionError):
-      config.types.no_key
+    assert config.no_section is None
+    assert config.types.no_key is None
 
     assert {
       ('types', 'string-value'): '# A string value',
@@ -121,7 +119,9 @@ class TestLocalConfig(object):
       ('types', 'true'): '# A mid-commented out\n# comment = value\n\n# A bool value',
       ('types', 'false'): '# A false bool value',
       ('types', 'none'): '# A None value',
-      'another-section': '# A commented out value\n# comment = value\n\n\n####################################################\n# Another section\n# with multiline comments\n####################################################',
+      'another-section': '# A commented out value\n# comment = value\n\n\n'
+                         '####################################################\n'
+                         '# Another section\n# with multiline comments\n####################################################',
       'types': '# Section used for type testing',
       'LAST_COMMENT_KEY': '# Comment at the end\n'
     } == config._comments
@@ -146,14 +146,14 @@ class TestLocalConfig(object):
       assert config.read(fp)
 
     assert len(config._sources) == 4
-    assert config._sources_read == False
+    assert config._sources_read is False
 
     assert config.types.int == 1
     assert config.sources.second_source == 'second'
     assert config.sources.third_source == 'third'
     assert config.sources.source == 'last'
 
-    assert config._sources_read == True
+    assert config._sources_read is True
 
     assert config.read('[sources]\nsource = updated')
 
@@ -190,7 +190,7 @@ class TestLocalConfig(object):
     assert config.types.int == 4
 
     config.types.yes = True
-    assert config.types.yes == True
+    assert config.types.yes is True
 
     assert 'yes = True' in str(config)
 
@@ -216,7 +216,7 @@ class TestLocalConfig(object):
       'int': 1,
       'float': 2.0,
       'long': 3L,
-      'true': True} == dict(config.types)
+      'true': True} == dict(list(config.types))
 
   def test_add_section(self, config):
     config.add_section('New Section', comment='Comment for\n  new section')

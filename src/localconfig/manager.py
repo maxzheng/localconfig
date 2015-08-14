@@ -1,4 +1,4 @@
-from ConfigParser import RawConfigParser, SafeConfigParser, NoSectionError, DuplicateSectionError, NoOptionError
+from ConfigParser import RawConfigParser, SafeConfigParser, DuplicateSectionError
 import os
 import re
 from StringIO import StringIO
@@ -186,7 +186,6 @@ class LocalConfig(object):
 
     return '\n'.join(output)
 
-
   def save(self, target_file=None, as_template=False):
     """
     Save the config
@@ -259,7 +258,7 @@ class LocalConfig(object):
     :param str key: Key to get config for.
     :param default: Default value for key if key was not found.
     :return: Value for the section/key or `default` if set and key does not exist.
-    :raise NoOptionError: if the key does not exist and no default value is set.
+             If not default is set, then return None.
     """
     self._read_sources()
 
@@ -270,7 +269,7 @@ class LocalConfig(object):
       value = self._parser.get(section, key)
     except Exception:
       if default == NO_DEFAULT_VALUE:
-        raise
+        return None
       else:
         return default
 
@@ -338,14 +337,12 @@ class LocalConfig(object):
     Get a section
 
     :param str section: Section to get
-    :rtype: :class:`LocalConfig.SectionAccessor`
-    :raise NoSectionError: if section does not exist
+    :rtype: :class:`LocalConfig.SectionAccessor` or None if section doesn't exist.
     """
     self._read_sources()
 
     if section in self._dot_keys:
       return self.SectionAccessor(self, section)
-    raise NoSectionError(section)
 
   def __iter__(self):
     self._read_sources()
@@ -404,4 +401,3 @@ class LocalConfig(object):
       key, value = item
       value = self._typed_value(value)
       yield (key, value)
-

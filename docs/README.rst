@@ -84,6 +84,13 @@ Now, let's do some inspection:
     items = list(config.web_server)    # [('host', '0.0.0.0'), ('port', 8080), ('debug', False)]
     items = dict(config.web_server)    # {'host': '0.0.0.0', 'port': 8080, 'debug': False}
 
+    # Check if a section or key is set - any non-existing section or key defaults to None.
+    if config.web_server or config.no_such_section:
+      pass
+
+    if config.web_server and (config.web_server.port or config.web_server.no_such_key):
+      pass
+
 To add a section and set a value:
 
 .. code-block:: python
