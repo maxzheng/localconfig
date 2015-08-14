@@ -1,5 +1,12 @@
-Version 0.4.1
+Version 0.4.2
 ================================================================================
+
+* Return None instead of raising NoSectionError/NoOptionError
+* Add long description / url
+* Update tox.ini
+
+Version 0.4.1
+--------------------------------------------------------------------------------
 
 * Update tox.ini
 
