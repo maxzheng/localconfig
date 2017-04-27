@@ -1,5 +1,10 @@
-Version 0.4.2
+Version 1.0.1
 ================================================================================
+
+* Migrate to Python 3.x
+
+Version 0.4.2
+--------------------------------------------------------------------------------
 
 * Return None instead of raising NoSectionError/NoOptionError
 * Add long description / url
