@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-import os
 import setuptools
 
 
 setuptools.setup(
   name='localconfig',
-  version='0.4.2',
+  version='1.0.0',
 
   author='Max Zheng',
   author_email='maxzheng.os @t gmail.com',
@@ -21,13 +20,10 @@ setuptools.setup(
 
   license='MIT',
 
-  package_dir={'': 'src'},
-  packages=setuptools.find_packages('src'),
+  packages=setuptools.find_packages(),
   include_package_data=True,
 
   setup_requires=['setuptools-git'],
-
-#  scripts=['bin/cast-example'],
 
   classifiers=[
     'Development Status :: 5 - Production/Stable',
@@ -37,9 +33,8 @@ setuptools.setup(
 
     'License :: OSI Approved :: MIT License',
 
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
   ],
 
   keywords='configuration config ConfigParser data type support',

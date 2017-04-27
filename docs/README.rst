@@ -13,7 +13,7 @@ Feature Summary
 * Full comment support / retention on save
 * Lazy reading of config sources for performance (only read when a config value is accessed)
 
-.. _ConfigParser: https://docs.python.org/2/library/configparser.html
+.. _ConfigParser: https://docs.python.org/3/library/configparser.html
 
 Quick Start Tutorial
 ====================
@@ -56,7 +56,7 @@ To read the config, simply do:
     # config.read('/etc/path/to/config.ini')  # Non-existing file is ignored
     #
     # Or read from a list of sources
-    # config.read(['string config', file_path, file_pointer, StringIO('config')])
+    # config.read(['string config', file_path, file_pointer, io.StringIO('config')])
     #
     # Or create another instance for another config:
     # from localconfig import LocalConfig
@@ -149,7 +149,6 @@ Type    Example Value
 ======= ===========================================
 int     1
 float   2.0
-long    3L
 bool    true false yes no on off (case insensitive)
 None    none (case insensitive)
 str     Any other value not matched by above

@@ -1,10 +1,10 @@
-from ConfigParser import RawConfigParser, SafeConfigParser, DuplicateSectionError
+from configparser import RawConfigParser, SafeConfigParser, DuplicateSectionError
+from io import StringIO, IOBase
 import os
 import re
-from StringIO import StringIO
 import sys
 
-from localconfig.utils import is_float, is_int, is_long, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
+from localconfig.utils import is_float, is_int, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
 
 NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
 NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
@@ -133,7 +133,7 @@ class LocalConfig(object):
           all_read &= self._read(source)
     else:
       for i, source in enumerate(sources):
-        if isinstance(source, file):
+        if isinstance(source, IOBase):
           sources[i] = source.read()
       self._sources.extend(sources)
 
@@ -149,7 +149,7 @@ class LocalConfig(object):
 
     if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
       source_fp = StringIO(source)
-    elif isinstance(source, file) or isinstance(source, StringIO):
+    elif isinstance(source, IOBase) or isinstance(source, StringIO):
       source_fp = source
     elif os.path.exists(source):
       source_fp = open(source)
@@ -322,8 +322,6 @@ class LocalConfig(object):
         new_value = int(value)
       elif is_float(value):
         new_value = float(value)
-      elif is_long(value):
-        new_value = long(value)
       elif is_bool(value):
         new_value = to_bool(value)
       elif is_none(value):

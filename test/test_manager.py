@@ -1,6 +1,6 @@
+from io import StringIO
 import os
 import re
-from StringIO import StringIO
 import tempfile
 
 import pytest
@@ -17,9 +17,6 @@ int = 1
 
 # A float value
 float = 2.0
-
-# A long value
-long = 3L
 
 # A mid-commented out
 # comment = value
@@ -59,8 +56,6 @@ COMPACT_TEST_CONFIG = """\
 int: 1
 # A float value
 float: 2.0
-# A long value
-long: 3L
 # A mid-commented out
 # comment = value
 
@@ -99,7 +94,6 @@ class TestLocalConfig(object):
   def test_read(self, config):
     assert config.types.int == 1
     assert config.types.float == 2.0
-    assert config.types.long == 3L
     assert config.types.true is True
     assert config.types.false is False
     assert config.types.none is None
@@ -115,7 +109,6 @@ class TestLocalConfig(object):
       ('types', 'string-value'): '# A string value',
       ('types', 'int'): '# An int value',
       ('types', 'float'): '# A float value',
-      ('types', 'long'): '# A long value',
       ('types', 'true'): '# A mid-commented out\n# comment = value\n\n# A bool value',
       ('types', 'false'): '# A false bool value',
       ('types', 'none'): '# A None value',
@@ -204,7 +197,6 @@ class TestLocalConfig(object):
     assert [
       ('int', 1),
       ('float', 2.0),
-      ('long', 3L),
       ('true', True),
       ('false', False),
       ('none', None),
@@ -215,7 +207,6 @@ class TestLocalConfig(object):
       'string-value': 'Value',
       'int': 1,
       'float': 2.0,
-      'long': 3L,
       'true': True} == dict(list(config.types))
 
   def test_add_section(self, config):
