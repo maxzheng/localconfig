@@ -147,7 +147,7 @@ class LocalConfig(object):
         :return: True if source was successfully read, otherwise False
         """
 
-        if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
+        if isinstance(source, str) and is_config(source):
             source_fp = StringIO(source)
         elif isinstance(source, IOBase) or isinstance(source, StringIO):
             source_fp = source
