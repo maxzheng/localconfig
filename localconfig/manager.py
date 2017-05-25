@@ -11,391 +11,391 @@ NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
 
 
 class LocalConfig(object):
-  """
-  Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
-  """
-
-  LAST_COMMENT_KEY = 'LAST_COMMENT_KEY'
-
-  class SectionAccessor(object):
     """
-    Provides access (read/write/iter) for a config section.
+    Wrapper for ConfigParser that allows configs to be accessed thru a dot notion method with data type support.
     """
 
-    def __init__(self, config, section):
-        self._config = config
-        self._section = section
+    LAST_COMMENT_KEY = 'LAST_COMMENT_KEY'
 
-    def __getattr__(self, key):
-      """
-      Get config value
+    class SectionAccessor(object):
+        """
+        Provides access (read/write/iter) for a config section.
+        """
 
-      :param str key: Config key to get value for
-      """
-      return self._config.get(self._section, key)
+        def __init__(self, config, section):
+            self._config = config
+            self._section = section
 
-    def __setattr__(self, key, value):
-      """
-      Set config value
+        def __getattr__(self, key):
+            """
+            Get config value
 
-      :param str key: Config key to set value for
-      :param str value: Config value to set to
-      """
-      if key in ['_config', '_section']:
-        super(LocalConfig.SectionAccessor, self).__setattr__(key, value)
-      else:
-        return self._config.set(self._section, key, value)
+            :param str key: Config key to get value for
+            """
+            return self._config.get(self._section, key)
 
-    def __iter__(self):
-      return self._config.items(self._section)
+        def __setattr__(self, key, value):
+            """
+            Set config value
 
-  def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
-    """
-    :param file/str last_source: Last config source file name. This source is read last when an attempt to read a
-                                 config value is made (delayed reading, hence "last") if it exists.
-                                 It is also the default target file location for :meth:`self.save`
-                                 For file source, if the file does not exist, it is ignored.
-                                 Defaults to ~/.config/<PROGRAM_NAME>
+            :param str key: Config key to set value for
+            :param str value: Config value to set to
+            """
+            if key in ['_config', '_section']:
+                super(LocalConfig.SectionAccessor, self).__setattr__(key, value)
+            else:
+                return self._config.set(self._section, key, value)
 
-    :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
-    :param str kv_sep: When serializing, separator used for key and value.
-    :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
-    :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
-    """
-    if not last_source and sys.argv and sys.argv[0]:
-      last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
+        def __iter__(self):
+            return self._config.items(self._section)
 
-    #: User config file name
-    self._last_source = last_source and os.path.expanduser(last_source)
+    def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
+        """
+        :param file/str last_source: Last config source file name. This source is read last when an attempt to read a
+                                     config value is made (delayed reading, hence "last") if it exists.
+                                     It is also the default target file location for :meth:`self.save`
+                                     For file source, if the file does not exist, it is ignored.
+                                     Defaults to ~/.config/<PROGRAM_NAME>
 
-    #: Config sources
-    self._sources = []
+        :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
+        :param str kv_sep: When serializing, separator used for key and value.
+        :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
+        :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
+        """
+        if not last_source and sys.argv and sys.argv[0]:
+            last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
 
-    #: Indicate if `self._sources` has been read
-    self._sources_read = False
+        #: User config file name
+        self._last_source = last_source and os.path.expanduser(last_source)
 
-    #: Parser instance from ConfigParser that does the underlying config parsing
-    self._parser = SafeConfigParser() if interpolation else RawConfigParser()
+        #: Config sources
+        self._sources = []
 
-    #: A dict that maps (section, key) to its comment.
-    self._comments = {}
+        #: Indicate if `self._sources` has been read
+        self._sources_read = False
 
-    #: A dict that maps dot notation section.key to its actual (section, key)
-    self._dot_keys = {}
+        #: Parser instance from ConfigParser that does the underlying config parsing
+        self._parser = SafeConfigParser() if interpolation else RawConfigParser()
 
-    #: Seperator for key/value. Used for save only.
-    self._kv_sep = kv_sep
+        #: A dict that maps (section, key) to its comment.
+        self._comments = {}
 
-    #: Number of spaces to use when indenting a value spanning multiple lines.
-    self._indent_spaces = indent_spaces
+        #: A dict that maps dot notation section.key to its actual (section, key)
+        self._dot_keys = {}
 
-    #: Save in compact form (no newline between keys)
-    self._compact_form = compact_form
+        #: Seperator for key/value. Used for save only.
+        self._kv_sep = kv_sep
 
-    #: Cache to avoid transforming value too many times
-    self._value_cache = {}
+        #: Number of spaces to use when indenting a value spanning multiple lines.
+        self._indent_spaces = indent_spaces
 
-  @classmethod
-  def _to_dot_key(cls, section, key=None):
-    """ Return the section and key in dot notation format. """
-    if key:
-      return (NON_ALPHA_NUM.sub('_', section.lower()), NON_ALPHA_NUM.sub('_', key.lower()))
-    else:
-      return NON_ALPHA_NUM.sub('_', section.lower())
+        #: Save in compact form (no newline between keys)
+        self._compact_form = compact_form
 
-  def _add_dot_key(self, section, key=None):
-    """
-    :param str section: Config section
-    :param str key: Config key
-    """
-    if key:
-      self._dot_keys[self._to_dot_key(section, key)] = (section, key)
-    else:
-      self._dot_keys[self._to_dot_key(section)] = section
+        #: Cache to avoid transforming value too many times
+        self._value_cache = {}
 
-  def read(self, sources):
-    """
-    Queues the config sources to be read later (when config is accessed), or reads immediately if config has already been
-    accessed.
+    @classmethod
+    def _to_dot_key(cls, section, key=None):
+        """ Return the section and key in dot notation format. """
+        if key:
+            return (NON_ALPHA_NUM.sub('_', section.lower()), NON_ALPHA_NUM.sub('_', key.lower()))
+        else:
+            return NON_ALPHA_NUM.sub('_', section.lower())
 
-    :param file/str/list sources: Config source string, file name, or file pointer, or list of the other sources.
-                                  If file source does not exist, it is ignored.
-    :return: True if all sources were successfully read or will be read, otherwise False
-    """
+    def _add_dot_key(self, section, key=None):
+        """
+        :param str section: Config section
+        :param str key: Config key
+        """
+        if key:
+            self._dot_keys[self._to_dot_key(section, key)] = (section, key)
+        else:
+            self._dot_keys[self._to_dot_key(section)] = section
 
-    all_read = True
+    def read(self, sources):
+        """
+        Queues the config sources to be read later (when config is accessed), or reads immediately if config has already been
+        accessed.
 
-    if not isinstance(sources, list):
-      sources = [sources]
+        :param file/str/list sources: Config source string, file name, or file pointer, or list of the other sources.
+                                      If file source does not exist, it is ignored.
+        :return: True if all sources were successfully read or will be read, otherwise False
+        """
 
-    if self._sources_read:
-      for source in sources:
-          all_read &= self._read(source)
-    else:
-      for i, source in enumerate(sources):
-        if isinstance(source, IOBase):
-          sources[i] = source.read()
-      self._sources.extend(sources)
+        all_read = True
 
-    return all_read
+        if not isinstance(sources, list):
+            sources = [sources]
 
-  def _read(self, source):
-    """
-    Reads and parses the config source
+        if self._sources_read:
+            for source in sources:
+                all_read &= self._read(source)
+        else:
+            for i, source in enumerate(sources):
+                if isinstance(source, IOBase):
+                    sources[i] = source.read()
+            self._sources.extend(sources)
 
-    :param file/str source: Config source string, file name, or file pointer. If file name does not exist, it is ignored.
-    :return: True if source was successfully read, otherwise False
-    """
+        return all_read
 
-    if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
-      source_fp = StringIO(source)
-    elif isinstance(source, IOBase) or isinstance(source, StringIO):
-      source_fp = source
-    elif os.path.exists(source):
-      source_fp = open(source)
-    else:
-      return False
+    def _read(self, source):
+        """
+        Reads and parses the config source
 
-    self._parser.read_file(source_fp)
-    self._parse_extra(source_fp)
+        :param file/str source: Config source string, file name, or file pointer. If file name does not exist, it is ignored.
+        :return: True if source was successfully read, otherwise False
+        """
 
-    return True
+        if (isinstance(source, str) or isinstance(source, unicode)) and is_config(source):
+            source_fp = StringIO(source)
+        elif isinstance(source, IOBase) or isinstance(source, StringIO):
+            source_fp = source
+        elif os.path.exists(source):
+            source_fp = open(source)
+        else:
+            return False
 
-  def __str__(self):
-    self._read_sources()
+        self._parser.read_file(source_fp)
+        self._parse_extra(source_fp)
 
-    output = []
-    extra_newline = '' if self._compact_form else '\n'
+        return True
 
-    for section in self._parser.sections():
-      if section in self._comments:
-        output.append(self._comments[section])
-      elif output:
-        output.append('')
+    def __str__(self):
+        self._read_sources()
 
-      output.append('[%s]%s' % (section, extra_newline))
+        output = []
+        extra_newline = '' if self._compact_form else '\n'
 
-      for key, value in self._parser.items(section):
-        if (section, key) in self._comments:
-          output.append(self._comments[(section, key)])
-        value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
-        output.append('%s%s%s%s' % (key, self._kv_sep, value, extra_newline))
+        for section in self._parser.sections():
+            if section in self._comments:
+                output.append(self._comments[section])
+            elif output:
+                output.append('')
 
-    if self.LAST_COMMENT_KEY in self._comments:
-      output.append(self._comments[self.LAST_COMMENT_KEY])
+            output.append('[%s]%s' % (section, extra_newline))
 
-    return '\n'.join(output)
+            for key, value in self._parser.items(section):
+                if (section, key) in self._comments:
+                    output.append(self._comments[(section, key)])
+                value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
+                output.append('%s%s%s%s' % (key, self._kv_sep, value, extra_newline))
 
-  def save(self, target_file=None, as_template=False):
-    """
-    Save the config
+        if self.LAST_COMMENT_KEY in self._comments:
+            output.append(self._comments[self.LAST_COMMENT_KEY])
 
-    :param str target_file: File to save to. Defaults to `self._last_source` if set
-    :param bool as_template: Save the config with all keys and sections commented out for user to modify
-    :raise AttributeError: if target file is not provided and `self._last_source` is not set
-    """
-    self._read_sources()
+        return '\n'.join(output)
 
-    if not target_file:
-      if not self._last_source:
-        raise AttributeError('Target file is required when last source is not set during instantiation')
-      target_file = self._last_source
+    def save(self, target_file=None, as_template=False):
+        """
+        Save the config
 
-    output = str(self)
+        :param str target_file: File to save to. Defaults to `self._last_source` if set
+        :param bool as_template: Save the config with all keys and sections commented out for user to modify
+        :raise AttributeError: if target file is not provided and `self._last_source` is not set
+        """
+        self._read_sources()
 
-    if as_template:
-      output_tmpl = []
-      for line in output.split('\n'):
-        if line and not line.startswith('#'):
-          line = '# %s' % line
-        output_tmpl.append(line)
-      output = '\n'.join(output_tmpl)
+        if not target_file:
+            if not self._last_source:
+                raise AttributeError('Target file is required when last source is not set during instantiation')
+            target_file = self._last_source
 
-    with open(target_file, 'w') as fp:
-      fp.write(output)
+        output = str(self)
 
-  def _parse_extra(self, fp):
-    """ Parse and store the config comments and create maps for dot notion lookup """
+        if as_template:
+            output_tmpl = []
+            for line in output.split('\n'):
+                if line and not line.startswith('#'):
+                    line = '# %s' % line
+                output_tmpl.append(line)
+            output = '\n'.join(output_tmpl)
 
-    comment = ''
-    section = ''
+        with open(target_file, 'w') as fp:
+            fp.write(output)
 
-    fp.seek(0)
-    for line in fp:
-      line = line.rstrip()
+    def _parse_extra(self, fp):
+        """ Parse and store the config comments and create maps for dot notion lookup """
 
-      if not line:
+        comment = ''
+        section = ''
+
+        fp.seek(0)
+        for line in fp:
+            line = line.rstrip()
+
+            if not line:
+                if comment:
+                    comment += '\n'
+                continue
+
+            if line.startswith('#'):  # Comment
+                comment += line + '\n'
+                continue
+
+            if line.startswith('['):  # Section
+                section = line.strip('[]')
+                self._add_dot_key(section)
+                if comment:
+                    self._comments[section] = comment.rstrip()
+
+            elif CONFIG_KEY_RE.match(line):  # Config
+                key = line.split('=', 1)[0].strip()
+                self._add_dot_key(section, key)
+                if comment:
+                    self._comments[(section, key)] = comment.rstrip()
+
+            comment = ''
+
         if comment:
-          comment += '\n'
-        continue
+            self._comments[self.LAST_COMMENT_KEY] = comment
 
-      if line.startswith('#'):  # Comment
-        comment += line + '\n'
-        continue
+    def get(self, section, key, default=NO_DEFAULT_VALUE):
+        """
+        Get config value with data type transformation (from str)
 
-      if line.startswith('['):  # Section
-        section = line.strip('[]')
-        self._add_dot_key(section)
-        if comment:
-          self._comments[section] = comment.rstrip()
+        :param str section: Section to get config for.
+        :param str key: Key to get config for.
+        :param default: Default value for key if key was not found.
+        :return: Value for the section/key or `default` if set and key does not exist.
+                 If not default is set, then return None.
+        """
+        self._read_sources()
 
-      elif CONFIG_KEY_RE.match(line):  # Config
-        key = line.split('=', 1)[0].strip()
+        if (section, key) in self._dot_keys:
+            section, key = self._dot_keys[(section, key)]
+
+        try:
+            value = self._parser.get(section, key)
+        except Exception:
+            if default == NO_DEFAULT_VALUE:
+                return None
+            else:
+                return default
+
+        return self._typed_value(value)
+
+    def set(self, section, key, value, comment=None):
+        """
+        Set config value with data type transformation (to str)
+
+        :param str section: Section to set config for
+        :param str key: Key to set config for
+        :param value: Value for key. It can be any primitive type.
+        :param str comment: Comment for the key
+        """
+
+        self._read_sources()
+
+        if (section, key) in self._dot_keys:
+            section, key = self._dot_keys[(section, key)]
+        elif section in self._dot_keys:
+            section = self._dot_keys[section]
+
+        if not isinstance(value, str):
+            value = str(value)
+
+        self._parser.set(section, key, value)
+
         self._add_dot_key(section, key)
         if comment:
-          self._comments[(section, key)] = comment.rstrip()
+            self._set_comment(section, comment, key)
 
-      comment = ''
+    def _read_sources(self):
+        if self._sources_read:
+            return
 
-    if comment:
-      self._comments[self.LAST_COMMENT_KEY] = comment
+        for source in self._sources:
+            self._read(source)
 
-  def get(self, section, key, default=NO_DEFAULT_VALUE):
-    """
-    Get config value with data type transformation (from str)
+        if self._last_source:
+            self._read(self._last_source)
 
-    :param str section: Section to get config for.
-    :param str key: Key to get config for.
-    :param default: Default value for key if key was not found.
-    :return: Value for the section/key or `default` if set and key does not exist.
-             If not default is set, then return None.
-    """
-    self._read_sources()
+        self._sources_read = True
 
-    if (section, key) in self._dot_keys:
-      section, key = self._dot_keys[(section, key)]
+    def _typed_value(self, value):
+        """ Transform string value to an actual data type of the same value. """
 
-    try:
-      value = self._parser.get(section, key)
-    except Exception:
-      if default == NO_DEFAULT_VALUE:
-        return None
-      else:
-        return default
+        if value not in self._value_cache:
+            new_value = value
+            if is_int(value):
+                new_value = int(value)
+            elif is_float(value):
+                new_value = float(value)
+            elif is_bool(value):
+                new_value = to_bool(value)
+            elif is_none(value):
+                new_value = None
+            self._value_cache[value] = new_value
 
-    return self._typed_value(value)
+        return self._value_cache[value]
 
-  def set(self, section, key, value, comment=None):
-    """
-    Set config value with data type transformation (to str)
+    def __getattr__(self, section):
+        """
+        Get a section
 
-    :param str section: Section to set config for
-    :param str key: Key to set config for
-    :param value: Value for key. It can be any primitive type.
-    :param str comment: Comment for the key
-    """
+        :param str section: Section to get
+        :rtype: :class:`LocalConfig.SectionAccessor` or None if section doesn't exist.
+        """
+        self._read_sources()
 
-    self._read_sources()
+        if section in self._dot_keys:
+            return self.SectionAccessor(self, section)
 
-    if (section, key) in self._dot_keys:
-      section, key = self._dot_keys[(section, key)]
-    elif section in self._dot_keys:
-      section = self._dot_keys[section]
+    def __iter__(self):
+        self._read_sources()
 
-    if not isinstance(value, str):
-      value = str(value)
+        for section in self._parser.sections():
+            yield section
 
-    self._parser.set(section, key, value)
+    def add_section(self, section, comment=None):
+        """
+        Add a section
 
-    self._add_dot_key(section, key)
-    if comment:
-      self._set_comment(section, comment, key)
+        :param str section: Section to add
+        :raise DuplicateSectionError: if section already exist.
+        """
+        self._read_sources()
 
-  def _read_sources(self):
-    if self._sources_read:
-      return
+        if self._to_dot_key(section) in self._dot_keys:
+            raise DuplicateSectionError(section)
 
-    for source in self._sources:
-      self._read(source)
+        self._parser.add_section(section)
+        self._add_dot_key(section)
+        if comment:
+            self._set_comment(section, comment)
 
-    if self._last_source:
-      self._read(self._last_source)
+    def _set_comment(self, section, comment, key=None):
+        """
+        Set a comment for section or key
 
-    self._sources_read = True
+        :param str section: Section to add comment to
+        :param str comment: Comment to add
+        :param str key: Key to add comment to
+        """
 
-  def _typed_value(self, value):
-    """ Transform string value to an actual data type of the same value. """
+        if '\n' in comment:
+            comment = '\n# '.join(comment.split('\n'))
+        comment = '# ' + comment
 
-    if value not in self._value_cache:
-      new_value = value
-      if is_int(value):
-        new_value = int(value)
-      elif is_float(value):
-        new_value = float(value)
-      elif is_bool(value):
-        new_value = to_bool(value)
-      elif is_none(value):
-        new_value = None
-      self._value_cache[value] = new_value
+        if key:
+            self._comments[(section, key)] = comment
+        else:
+            self._comments[section] = comment
 
-    return self._value_cache[value]
+    def items(self, section):
+        """
+        Items for section with data type transformation (from str)
 
-  def __getattr__(self, section):
-    """
-    Get a section
+        :param str section: Section to get items for.
+        :return: Generator of (key, value) for the section
+        """
+        self._read_sources()
 
-    :param str section: Section to get
-    :rtype: :class:`LocalConfig.SectionAccessor` or None if section doesn't exist.
-    """
-    self._read_sources()
+        if section in self._dot_keys:
+            section = self._dot_keys[section]
 
-    if section in self._dot_keys:
-      return self.SectionAccessor(self, section)
-
-  def __iter__(self):
-    self._read_sources()
-
-    for section in self._parser.sections():
-      yield section
-
-  def add_section(self, section, comment=None):
-    """
-    Add a section
-
-    :param str section: Section to add
-    :raise DuplicateSectionError: if section already exist.
-    """
-    self._read_sources()
-
-    if self._to_dot_key(section) in self._dot_keys:
-      raise DuplicateSectionError(section)
-
-    self._parser.add_section(section)
-    self._add_dot_key(section)
-    if comment:
-      self._set_comment(section, comment)
-
-  def _set_comment(self, section, comment, key=None):
-    """
-    Set a comment for section or key
-
-    :param str section: Section to add comment to
-    :param str comment: Comment to add
-    :param str key: Key to add comment to
-    """
-
-    if '\n' in comment:
-      comment = '\n# '.join(comment.split('\n'))
-    comment = '# ' + comment
-
-    if key:
-      self._comments[(section, key)] = comment
-    else:
-      self._comments[section] = comment
-
-  def items(self, section):
-    """
-    Items for section with data type transformation (from str)
-
-    :param str section: Section to get items for.
-    :return: Generator of (key, value) for the section
-    """
-    self._read_sources()
-
-    if section in self._dot_keys:
-      section = self._dot_keys[section]
-
-    for item in self._parser.items(section):
-      key, value = item
-      value = self._typed_value(value)
-      yield (key, value)
+        for item in self._parser.items(section):
+            key, value = item
+            value = self._typed_value(value)
+            yield (key, value)
