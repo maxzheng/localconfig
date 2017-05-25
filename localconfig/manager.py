@@ -156,7 +156,7 @@ class LocalConfig(object):
     else:
       return False
 
-    self._parser.readfp(source_fp)
+    self._parser.read_file(source_fp)
     self._parse_extra(source_fp)
 
     return True
