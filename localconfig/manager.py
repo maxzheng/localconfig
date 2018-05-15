@@ -59,7 +59,8 @@ class LocalConfig(object):
 
         :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
         :param str kv_sep: When serializing, separator used for key and value.
-        :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple lines.
+        :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple
+                                  lines.
         :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
         """
         if not last_source and sys.argv and sys.argv[0]:
@@ -115,8 +116,8 @@ class LocalConfig(object):
 
     def read(self, sources):
         """
-        Queues the config sources to be read later (when config is accessed), or reads immediately if config has already been
-        accessed.
+        Queues the config sources to be read later (when config is accessed), or reads immediately if config has already
+        been accessed.
 
         :param file/str/list sources: Config source string, file name, or file pointer, or list of the other sources.
                                       If file source does not exist, it is ignored.
@@ -143,7 +144,8 @@ class LocalConfig(object):
         """
         Reads and parses the config source
 
-        :param file/str source: Config source string, file name, or file pointer. If file name does not exist, it is ignored.
+        :param file/str source: Config source string, file name, or file pointer. If file name does not exist, it is
+                                ignored.
         :return: True if source was successfully read, otherwise False
         """
 
