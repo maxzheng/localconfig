@@ -193,6 +193,15 @@ def test_set(config):
     assert 'yes = True' in str(config)
 
 
+def test_default_section():
+    config = LocalConfig()
+    config.add_section('special')
+    config.special.var = 'I am special'
+    config.not_special = 'I am default'
+
+    assert str(config) == '[DEFAULT]\n\nnot_special = I am default\n\n\n[special]\n\nvar = I am special\n'
+
+
 def test_sep():
     config = LocalConfig(kv_sep=': ')
     config.read(TEST_CONFIG)

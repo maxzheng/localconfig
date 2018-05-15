@@ -1,4 +1,4 @@
-from configparser import RawConfigParser, SafeConfigParser, DuplicateSectionError
+from configparser import RawConfigParser, SafeConfigParser, DuplicateSectionError, DEFAULTSECT
 from io import StringIO, IOBase
 import os
 import re
@@ -168,8 +168,15 @@ class LocalConfig(object):
 
         output = []
         extra_newline = '' if self._compact_form else '\n'
+        default_keys = set()
 
-        for section in self._parser.sections():
+        for section, proxy in self._parser.items():
+            if not len(proxy):
+                continue
+
+            if section == DEFAULTSECT:
+                default_keys = set(proxy)
+
             if section in self._comments:
                 output.append(self._comments[section])
             elif output:
@@ -177,7 +184,10 @@ class LocalConfig(object):
 
             output.append('[%s]%s' % (section, extra_newline))
 
-            for key, value in self._parser.items(section):
+            for key, value in proxy.items():
+                if section != DEFAULTSECT and key in default_keys:
+                    continue
+
                 if (section, key) in self._comments:
                     output.append(self._comments[(section, key)])
                 value = ('\n' + ' ' * self._indent_spaces).join(value.split('\n'))
@@ -334,7 +344,7 @@ class LocalConfig(object):
 
     def __getattr__(self, section):
         """
-        Get a section
+        Get a section or attribute from DEFAULTSECT
 
         :param str section: Section to get
         :rtype: :class:`LocalConfig.SectionAccessor` or None if section doesn't exist.
@@ -343,6 +353,22 @@ class LocalConfig(object):
 
         if section in self._dot_keys:
             return self.SectionAccessor(self, section)
+
+        # Default section
+        attr = section
+        return getattr(self.SectionAccessor(self, DEFAULTSECT), attr)
+
+    def __setattr__(self, attr, value):
+        """
+        Set an attribute for DEFAULTSECT
+
+        :param str attr: Attribute key to set
+        :param object value: Value to set for attribute
+        """
+        if attr.startswith('_'):
+            super().__setattr__(attr, value)
+        else:
+            setattr(self.SectionAccessor(self, DEFAULTSECT), attr, value)
 
     def __iter__(self):
         self._read_sources()

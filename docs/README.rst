@@ -101,6 +101,9 @@ To add a section and set a value:
     # Use `set` if you want to set a comment
     config.set('App Server', 'port', 9090, comment='App server port')
 
+    # Set value for the DEFAULT section (default value for all other sections)
+    config.env = 'prod'
+
 To write the config:
 
 .. code-block:: python
@@ -116,6 +119,10 @@ To write the config:
 If we open ~/.config/program now, we would see:
 
 .. code-block:: ini
+    [DEFAULT]
+
+    env = prod
+
 
     [Web Server]
 
