@@ -1,5 +1,10 @@
-Version 1.1.0
+Version 1.1.1
 ================================================================================
+
+* Remove test concurrency and change default env to cover,style
+
+Version 1.1.0
+--------------------------------------------------------------------------------
 
 * Add support for DEFAULT section
 * Fix style issues
