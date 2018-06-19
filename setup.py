@@ -23,7 +23,8 @@ setuptools.setup(
   packages=setuptools.find_packages(),
   include_package_data=True,
 
-  setup_requires=['setuptools-git'],
+  python_requires='>=3.6',
+  setup_requires=['setuptools-git', 'wheel'],
 
   classifiers=[
     'Development Status :: 5 - Production/Stable',

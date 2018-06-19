@@ -1,4 +1,4 @@
-from configparser import RawConfigParser, SafeConfigParser, DuplicateSectionError, DEFAULTSECT
+from configparser import ConfigParser, BasicInterpolation, DuplicateSectionError, DEFAULTSECT
 from io import StringIO, IOBase
 import os
 import re
@@ -49,7 +49,7 @@ class LocalConfig(object):
         def __iter__(self):
             return self._config.items(self._section)
 
-    def __init__(self, last_source=None, interpolation=False, kv_sep=' = ', indent_spaces=4, compact_form=False):
+    def __init__(self, last_source=None, interpolation=None, kv_sep=' = ', indent_spaces=4, compact_form=False):
         """
         :param file/str last_source: Last config source file name. This source is read last when an attempt to read a
                                      config value is made (delayed reading, hence "last") if it exists.
@@ -57,7 +57,8 @@ class LocalConfig(object):
                                      For file source, if the file does not exist, it is ignored.
                                      Defaults to ~/.config/<PROGRAM_NAME>
 
-        :param bool interpolation: Support interpolation (use SafeConfigParser instead of RawConfigParser)
+        :param Interpolation|bool|None interpolation: Support interpolation using the given :cls:`Interpolation`
+                                                      instance, or if True, then defaults to :cls:`BasicInterpolation`
         :param str kv_sep: When serializing, separator used for key and value.
         :param int indent_spaces: When serializing, number of spaces to use when indenting a value spanning multiple
                                   lines.
@@ -76,7 +77,8 @@ class LocalConfig(object):
         self._sources_read = False
 
         #: Parser instance from ConfigParser that does the underlying config parsing
-        self._parser = SafeConfigParser() if interpolation else RawConfigParser()
+        interpolation = BasicInterpolation() if interpolation is True else interpolation
+        self._parser = ConfigParser(interpolation=interpolation) if interpolation else ConfigParser(interpolation=None)
 
         #: A dict that maps (section, key) to its comment.
         self._comments = {}

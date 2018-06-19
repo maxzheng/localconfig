@@ -1,3 +1,4 @@
+from configparser import ExtendedInterpolation
 from io import StringIO
 import os
 import re
@@ -233,3 +234,28 @@ def test_add_section(config):
 
     with pytest.raises(DuplicateSectionError):
         config.add_section('another-section')
+
+
+def test_basic_interpolation():
+    config = LocalConfig(interpolation=True)
+    config.read("""
+[server]
+server=0.0.0.0
+host_and_port=%(server)s:5000
+""")
+    assert config.server.host_and_port == '0.0.0.0:5000'
+
+
+def test_extended_interpolation():
+    config = LocalConfig(interpolation=ExtendedInterpolation())
+    config.read("""
+[server]
+host=0.0.0.0
+port=5000
+
+[client]
+server_host=${server:host}
+server_port=${server:port}
+""")
+    assert config.client.server_host == '0.0.0.0'
+    assert config.client.server_port == 5000
