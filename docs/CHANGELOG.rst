@@ -1,5 +1,10 @@
-Version 1.1.1
+Version 1.1.2
 ================================================================================
+
+* Allow user to specify custom interpolation instance
+
+Version 1.1.1
+--------------------------------------------------------------------------------
 
 * Remove test concurrency and change default env to cover,style
 
