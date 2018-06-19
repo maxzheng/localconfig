@@ -240,8 +240,8 @@ def test_basic_interpolation():
     config = LocalConfig(interpolation=True)
     config.read("""
 [server]
-server=0.0.0.0
-host_and_port=%(server)s:5000
+host=0.0.0.0
+host_and_port=%(host)s:5000
 """)
     assert config.server.host_and_port == '0.0.0.0:5000'
 
