@@ -64,7 +64,7 @@ class LocalConfig(object):
                                   lines.
         :param bool compact_form: Serialize in compact form, such as no new lines between each config key.
         """
-        if not last_source and sys.argv and sys.argv[0]:
+        if not last_source and sys.argv and sys.argv[0] and not sys.argv[0].endswith('/pytest'):
             last_source = os.path.join('~', '.config', os.path.basename(sys.argv[0]))
 
         #: User config file name
