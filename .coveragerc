@@ -1,2 +1,8 @@
 [run]
-omit = .tox/*,test/*,setup.py
+omit =
+    .git/*
+    .tox/*
+    docs/*
+    setup.py
+    test/*
+    tests/*
