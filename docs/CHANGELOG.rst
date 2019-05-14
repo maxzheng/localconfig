@@ -1,5 +1,14 @@
-Version 1.1.2
+Version 1.1.3
 ================================================================================
+
+* Fix RST doc format
+* Add note about config read order
+* Test py37
+* Skip setting last source if run by pytest
+* Fix typo
+
+Version 1.1.2
+--------------------------------------------------------------------------------
 
 * Allow user to specify custom interpolation instance
 
