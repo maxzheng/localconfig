@@ -62,6 +62,11 @@ To read the config, simply do:
     # from localconfig import LocalConfig
     # config2 = LocalConfig('/etc/path/to/another/config.ini')
 
+Configs are read in the order they are called using `config.read()`, but the config file passed to the `LocalConfig()`
+constructor (defaults to `~/.config/$script_name`) will be read last before the first access to config values, which
+allows us to read configs from various locations, like default configs from a string that is checked in with the code,
+while allowing them to be overrriden from the config file that is passed to the constructor.
+
 Now, let's do some inspection:
 
 .. code-block:: python
