@@ -22,7 +22,7 @@ To install::
 
     pip install localconfig
 
-Let's say we have a script named 'program' with the following config in ~/.config/program:
+Let's say we have a script named `program` with the following config in `~/.config/program`:
 
 .. code-block:: ini
 
@@ -73,10 +73,10 @@ Now, let's do some inspection:
 
     # Iterate over sections and their keys/values
     for section in config:
-      print section                    # Web Server
+      print(section)                   # Web Server
 
       for key, value in config.items(section):
-        print key, value, type(value)  # host 0.0.0.0 <type 'str'>
+        print(key, value, type(value)) # host 0.0.0.0 <type 'str'>
                                        # port 8080 <type 'int'>
                                        # debug False <type 'bool'>
 
@@ -84,7 +84,7 @@ Now, let's do some inspection:
 
     # Iterate over keys/values
     for key, value in config.web_server:
-      print key, value, type(value)    # Same output as above config.items()
+      print(key, value, type(value))    # Same output as above config.items()
 
     items = list(config.web_server)    # [('host', '0.0.0.0'), ('port', 8080), ('debug', False)]
     items = dict(config.web_server)    # {'host': '0.0.0.0', 'port': 8080, 'debug': False}
@@ -121,9 +121,8 @@ To write the config:
     # Or save to a different location:
     # config.save('/path/to/save/to.ini')
 
-If we open ~/.config/program now, we would see:
+If we open `~/.config/program` now, we would see::
 
-.. code-block:: ini
     [DEFAULT]
 
     env = prod
