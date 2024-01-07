@@ -1,6 +1,6 @@
 import re
 
-CONFIG_KEY_RE = re.compile('[A-Za-z0-9\-\_\.]+\s*=')
+CONFIG_KEY_RE = re.compile(r'[A-Za-z0-9\-\_\.]+\s*=')
 
 
 def is_float(value):

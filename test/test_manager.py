@@ -99,9 +99,8 @@ def test_read(config):
     assert config.types.none is None
     assert config.types.string_value == 'Value'
 
-    assert (config.another_section.multi_line ==
-            'This line spans multiple lines and\nwill be written out as such. '
-            'It will wrap\nwhere it originally wrapped.')
+    assert (config.another_section.multi_line == 'This line spans multiple lines and\nwill be written out as such. '
+                                                 'It will wrap\nwhere it originally wrapped.')
 
     assert config.no_section is None
     assert config.types.no_key is None
