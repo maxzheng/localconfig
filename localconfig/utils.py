@@ -13,6 +13,16 @@ def is_int(value):
     return _is_type(value, int)
 
 
+def is_int_base_n(value):
+    """ Checks if the value is an int """
+    try:
+        # int(value, 0) will autodetect the presence of a base-n prefix in a string
+        int(value, 0)
+        return True
+    except Exception:
+        return False
+
+
 def is_bool(value):
     """ Checks if the value is a bool """
     return value.lower() in ['true', 'false', 'yes', 'no', 'on', 'off']
