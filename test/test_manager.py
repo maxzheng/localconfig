@@ -16,6 +16,15 @@ TEST_CONFIG = """\
 # An int value
 int = 1
 
+# A binary int value
+int_binary = 0b11
+
+# An octal int value
+int_octal = 0o77
+
+# A hexadecimal int value
+int_hex = 0xabcd
+
 # A float value
 float = 2.0
 
@@ -55,6 +64,12 @@ COMPACT_TEST_CONFIG = """\
 [types]
 # An int value
 int: 1
+# A binary int value
+int_binary: 0b11
+# An octal int value
+int_octal: 0o77
+# A hexadecimal int value
+int_hex: 0xabcd
 # A float value
 float: 2.0
 # A mid-commented out
@@ -93,6 +108,9 @@ def config():
 
 def test_read(config):
     assert config.types.int == 1
+    assert config.types.int_binary == 0b11
+    assert config.types.int_octal == 0o77
+    assert config.types.int_hex == 0xabcd
     assert config.types.float == 2.0
     assert config.types.true is True
     assert config.types.false is False
@@ -108,6 +126,9 @@ def test_read(config):
     assert {
       ('types', 'string-value'): '# A string value',
       ('types', 'int'): '# An int value',
+      ('types', 'int_binary'): '# A binary int value',
+      ('types', 'int_octal'): '# An octal int value',
+      ('types', 'int_hex'): '# A hexadecimal int value',
       ('types', 'float'): '# A float value',
       ('types', 'true'): '# A mid-commented out\n# comment = value\n\n# A bool value',
       ('types', 'false'): '# A false bool value',
@@ -212,6 +233,9 @@ def test_iter(config):
     assert list(config) == ['types', 'another-section']
     assert [
       ('int', 1),
+      ('int_binary', 0b11),
+      ('int_octal', 0o77),
+      ('int_hex', 0xabcd),
       ('float', 2.0),
       ('true', True),
       ('false', False),
@@ -222,6 +246,9 @@ def test_iter(config):
       'none': None,
       'string-value': 'Value',
       'int': 1,
+      'int_binary': 0b11,
+      'int_octal': 0o77,
+      'int_hex': 0xabcd,
       'float': 2.0,
       'true': True} == dict(list(config.types))
 
