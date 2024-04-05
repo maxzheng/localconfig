@@ -1,5 +1,17 @@
-Version 1.1.3
+Version 1.1.4
 ================================================================================
+
+* Merge pull request #6 from ilario/int-non_decimal
+  
+  Add support for non-decimal integers
+* README added int_base_n to int examples
+* test_manager test int_base_n
+* manage: use is_int_base_n
+* utils: added is_int_base_n
+* Update tox
+
+Version 1.1.3
+--------------------------------------------------------------------------------
 
 * Fix RST doc format
 * Add note about config read order
