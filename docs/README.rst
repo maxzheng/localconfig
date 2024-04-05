@@ -158,7 +158,7 @@ The following types are supported:
 ======= ===========================================
 Type    Example Value
 ======= ===========================================
-int     1
+int     1 0b1101 0o70 0xFF
 float   2.0
 bool    true false yes no on off (case insensitive)
 None    none (case insensitive)

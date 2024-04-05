@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-from localconfig.utils import is_float, is_int, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
+from localconfig.utils import is_float, is_int, is_int_base_n, is_bool, is_none, is_config, CONFIG_KEY_RE, to_bool
 
 NON_ALPHA_NUM = re.compile('[^A-Za-z0-9]')
 NO_DEFAULT_VALUE = 'NO-DEFAULT-VALUE'
@@ -334,6 +334,8 @@ class LocalConfig(object):
             new_value = value
             if is_int(value):
                 new_value = int(value)
+            elif is_int_base_n(value):
+                new_value = int(value, 0)
             elif is_float(value):
                 new_value = float(value)
             elif is_bool(value):
